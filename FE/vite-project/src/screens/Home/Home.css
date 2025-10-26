@@ -1,0 +1,128 @@
+/* Hero Section */
+.hero-section {
+  background: linear-gradient(135deg, #351491 0%, #101728 100%);
+  min-height: 400px;
+  display: flex;
+  align-items: center;
+}
+
+.search-form {
+  max-width: 600px;
+}
+
+.search-input {
+  border: none;
+  border-radius: 0.5rem 0 0 0.5rem !important;
+}
+
+.search-btn {
+  border-radius: 0 0.5rem 0.5rem 0 !important;
+  color: #4f46e5 !important;
+  font-weight: 600;
+}
+
+.search-btn:hover {
+  background-color: #351491 !important;
+  color: white !important;
+}
+
+/* Categories Section */
+.category-card {
+  background-color: #f9fafb;
+  border-radius: 0.75rem;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  padding: 1.5rem 1rem;
+}
+
+.category-card:hover {
+  background-color: #eef2ff;
+  transform: translateY(-5px);
+}
+
+.category-icon {
+  font-size: 2.5rem;
+}
+
+/* Professionals Section */
+.professionals-section {
+  background-color: #f9fafb;
+}
+
+.professional-card {
+  transition: all 0.3s ease;
+  border-radius: 0.75rem;
+}
+
+.professional-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1) !important;
+}
+
+.avatar {
+  width: 64px;
+  height: 64px;
+  font-size: 1.25rem;
+  flex-shrink: 0;
+}
+
+.bg-gradient-purple {
+  background: linear-gradient(135deg, #a855f7 0%, #ec4899 100%);
+}
+
+.bg-gradient-blue {
+  background: linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%);
+}
+
+.bg-gradient-green {
+  background: linear-gradient(135deg, #22c55e 0%, #3b82f6 100%);
+}
+
+.price {
+  font-size: 1.1rem;
+}
+
+/* How it Works Section */
+.step-icon {
+  width: 80px;
+  height: 80px;
+  background-color: #eef2ff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+}
+
+/* CTA Section */
+.cta-section {
+  background-color: #4f46e5;
+}
+
+.cta-main-btn {
+  color: #4f46e5 !important;
+  padding: 0.75rem 2rem;
+  font-size: 1.125rem;
+}
+
+.cta-main-btn:hover {
+  background-color: #f3f4f6 !important;
+}
+
+/* Section Titles */
+.section-title {
+  font-size: 1.875rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .hero-section h2 {
+    font-size: 2rem;
+  }
+  
+  .section-title {
+    font-size: 1.5rem;
+  }
+}

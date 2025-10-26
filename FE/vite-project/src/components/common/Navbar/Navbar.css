@@ -1,0 +1,37 @@
+.navbar-custom {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+.brand-logo {
+  font-size: 1.5rem;
+  color: #312e81;
+}
+
+.brand-tagline {
+  font-size: 0.875rem;
+}
+
+.nav-link-custom {
+  color: #374151 !important;
+  font-weight: 500;
+  padding: 0.5rem 1rem;
+  transition: color 0.3s ease;
+}
+
+.nav-link-custom:hover {
+  color: #4f46e5 !important;
+}
+
+.btn-custom {
+  background-color: #312e81;
+  border-color: #312e81;
+  font-weight: 500;
+  padding: 0.5rem 1.25rem;
+}
+
+.btn-custom:hover {
+  background-color: #1e1b4b;
+  border-color: #1e1b4b;
+}
