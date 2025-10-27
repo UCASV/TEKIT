@@ -16,13 +16,13 @@ function Home() {
 
   const professionals = [
     {
-      initials: 'LM',
-      name: 'Lionel Messi',
-      role: 'Jugador profesional',
-      rating: 5,
+      initials: 'LY',
+      name: 'Lamine Yamal',
+      role: 'Semi jugador profesional',
+      rating: 2,
       reviews: 47,
-      description: 'No solo hago goles, también asisto y te hago un partidazo, beso el escudo y te hago promo en instagram (Llevo pelota).',
-      price: '€50/gol o asistencia',
+      description: 'Hablo antes del partido y despues no hago nada',
+      price: 'Un beso de Nicki Nicole/gol o asistencia',
       avatarClass: 'bg-gradient-purple'
     },
     {
@@ -36,12 +36,12 @@ function Home() {
       avatarClass: 'bg-gradient-blue'
     },
     {
-      initials: 'CR',
-      name: 'Cristiano Ronaldo',
+      initials: 'KM',
+      name: 'Kylian Mbappe',
       role: 'Jugador Profesional',
       rating: 5,
       reviews: 28,
-      description: 'Ayudo a equipos a ganar torneos SIUUU',
+      description: 'Violo equipos a domicilio o en casa (última chamba contra el barca)',
       price: '€60/gol',
       avatarClass: 'bg-gradient-green'
     }

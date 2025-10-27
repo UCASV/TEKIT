@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TEKIT - Resultados de Búsqueda</title>
+    <link rel="stylesheet" href="stylesbusqueda.css">
+
+</head>
+
+<body>
+    <header>
+        <div class="header-container">
+            <div class="header-content">
+                <div class="logo-section">
+                    <a href="#" class="logo">TEKIT</a>
+                    <span class="tagline">Marketplace Profesional</span>
+                </div>
+                <nav class="main-nav">
+                    <a href="#" class="nav-link">Explorar</a>
+                    <a href="#" class="nav-link">Categorías</a>
+                    <a href="#" class="nav-link">Cómo funciona</a>
+                </nav>
+                <div class="header-actions">
+                    <button class="login-btn">Iniciar Sesión</button>
+                    <button class="cta-btn">Ofrecer Servicios</button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <section class="search-header">
+        <div class="search-header-container">
+            <div class="search-logo"></div>
+            <div class="main-search-container">
+                <input type="text" class="main-search-input" placeholder="¿Qué servicio necesitas?" value="fontanería">
+            </div>
+            <div>
+                <button class="search-btn">Buscar</button>
+            </div>
+        </div>
+    </section>
+
+    <nav class="breadcrumbs">
+        <div class="breadcrumbs-container">
+            <div class="breadcrumb-nav">
+                <a href="#" class="breadcrumb-link">Inicio</a>
+                <span class="breadcrumb-separator"></span>
+                <a href="#" class="breadcrumb-link">Búsqueda</a>
+                <span class="breadcrumb-separator"></span>
+                <span class="breadcrumb-current">"fontanería" (47 resultados)</span>
+            </div>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <aside class="filters-sidebar">
+            <div class="filters-header">
+                <h3 class="filters-title">Filtros</h3>
+                <button class="clear-filters-btn">Limpiar todo</button>
+            </div>
+
+            <div class="filter-group">
+                <label class="filter-label">Categorías</label>
+                <div class="category-options">
+                    <div class="checkbox-option">
+                        <input type="checkbox" id="fontaneria" checked>
+                        <label for="fontaneria">Fontanería</label>
+                        <span class="option-count">(23)</span>
+                    </div>
+                    <div class="checkbox-option">
+                        <input type="checkbox" id="limpieza">
+                        <label for="limpieza">Limpieza</label>
+                        <span class="option-count">(15)</span>
+                    </div>
+                    <div class="checkbox-option">
+                        <input type="checkbox" id="construccion">
+                        <label for="construccion">Construcción</label>
+                        <span class="option-count">(9)</span>
+                    </div>
+                    <div class="checkbox-option">
+                        <input type="checkbox" id="electricidad">
+                        <label for="electricidad">Electricidad</label>
+                        <span class="option-count">(12)</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="filter-group">
+                <label class="filter-label">Rango de Precio</label>
+                <div class="price-range">
+                    <div class="price-inputs">
+                        <input type="number" class="price-input" placeholder="Min $" value="10">
+                        <span class="price-separator">-</span>
+                        <input type="number" class="price-input" placeholder="Max $" value="100">
+                    </div>
+                </div>
+            </div>
+
+            <div class="filter-group">
+                <label class="filter-label">Calificación Mínima</label>
+                <div class="rating-options">
+                    <div class="rating-option">
+                        <input type="radio" id="rating5" name="rating" value="5">
+                        <span class="rating-stars">★★★★★</span>
+                        <span class="rating-text">5 estrellas</span>
+                    </div>
+                    <div class="rating-option">
+                        <input type="radio" id="rating4" name="rating" value="4" checked>
+                        <span class="rating-stars">★★★★☆</span>
+                        <span class="rating-text">4+ estrellas</span>
+                    </div>
+                    <div class="rating-option">
+                        <input type="radio" id="rating3" name="rating" value="3">
+                        <span class="rating-stars">★★★☆☆</span>
+                        <span class="rating-text">3+ estrellas</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="filter-group">
+                <label class="filter-label">Ubicación</label>
+                <select class="location-select">
+                    <option>Toda El Salvador</option>
+                    <option>San Salvador</option>
+                    <option>Santa Ana</option>
+                    <option>San Miguel</option>
+                    <option>Sonsonate</option>
+                    <option>La Libertad</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label class="filter-label">Disponibilidad</label>
+                <div class="category-options">
+                    <div class="checkbox-option">
+                        <input type="checkbox" id="available-now">
+                        <label for="available-now">Disponible ahora</label>
+                    </div>
+                    <div class="checkbox-option">
+                        <input type="checkbox" id="weekend">
+                        <label for="weekend">Fines de semana</label>
+                    </div>
+                    <div class="checkbox-option">
+                        <input type="checkbox" id="emergency">
+                        <label for="emergency">Servicio de emergencia</label>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <section class="results-section">
+            <div class="results-header">
+                <div class="results-count">
+                    Mostrando <strong>1-9</strong> de <strong>47</strong> resultados para <strong>"fontanería"</strong>
+                </div>
+                <div class="sort-container">
+                    <span class="sort-label">Ordenar por:</span>
+                    <select class="sort-select">
+                        <option>Más relevantes</option>
+                        <option>Precio: menor a mayor</option>
+                        <option>Precio: mayor a menor</option>
+                        <option>Mejor calificados</option>
+                        <option>Más recientes</option>
+                        <option>Más antiguos</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="results-grid">
+                <div class="professional-card">
+                    <div class="professional-info">
+                        <div class="avatar avatar-blue">JM</div>
+                        <div class="professional-details">
+                            <h4 class="professional-name">Juan Martínez</h4>
+                            <p class="professional-role">Fontanero Profesional</p>
+                            <div class="rating">
+                                <span class="stars">★★★★★</span>
+                                <span class="reviews">(28 reseñas)</span>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="professional-description">Especialista en reparaciones de tuberías, instalación de grifos
+                        y sistemas de agua. 15 años de experiencia.</p>
+                    <div class="professional-footer">
+                        <span class="price">Desde €25/hora</span>
+                        <button class="contact-btn">Contactar</button>
+                    </div>
+                </div>
+
+                <div class="professional-card">
+                    <div class="professional-info">
+                        <div class="avatar avatar-green">AR</div>
+                        <div class="professional-details">
+                            <h4 class="professional-name">Ana Rodríguez</h4>
+                            <p class="professional-role">Fontanera Certificada</p>
+                            <div class="rating">
+                                <span class="stars">★★★★★</span>
+                                <span class="reviews">(45 reseñas)</span>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="professional-description">Servicios de fontanería residencial y comercial. Especializada
+                        en emergencias 24/7.</p>
+                    <div class="professional-footer">
+                        <span class="price">Desde €30/hora</span>
+                        <button class="contact-btn">Contactar</button>
+                    </div>
+                </div>
+
+                <div class="professional-card">
+                    <div class="professional-info">
+                        <div class="avatar avatar-purple">CL</div>
+                        <div class="professional-details">
+                            <h4 class="professional-name">Carlos López</h4>
+                            <p class="professional-role">Técnico en Fontanería</p>
+                            <div class="rating">
+                                <span class="stars">★★★★☆</span>
+                                <span class="reviews">(19 reseñas)</span>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="professional-description">Reparación de fugas, destapado de cañerías y mantenimiento
+                        preventivo de sistemas hidráulicos.</p>
+                    <div class="professional-footer">
+                        <span class="price">Desde €20/hora</span>
+                        <button class="contact-btn">Contactar</button>
+                    </div>
+                </div>
+
+                <div class="professional-card">
+                    <div class="professional-info">
+                        <div class="avatar avatar-orange">MG</div>
+                        <div class="professional-details">
+                            <h4 class="professional-name">María García</h4>
+                            <p class="professional-role">Fontanera Industrial</p>
+                            <div class="rating">
+                                <span class="stars">★★★★★</span>
+                                <span class="reviews">(52 reseñas)</span>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="professional-description">Especialista en sistemas industriales, calderas y equipos de
+                        gran capacidad. Certificación ISO.</p>
+                    <div class="professional-footer">
+                        <span class="price">Desde €45/hora</span>
+                        <button class="contact-btn">Contactar</button>
+                    </div>
+                </div>
+
+                <div class="professional-card">
+                    <div class="professional-info">
+                        <div class="avatar avatar-red">DS</div>
+                        <div class="professional-details">
+                            <h4 class="professional-name">David Silva</h4>
+                            <p class="professional-role">Plomero Experto</p>
+                            <div class="rating">
+                                <span class="stars">★★★★☆</span>
+                                <span class="reviews">(31 reseñas)</span>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="professional-description">Instalación y reparación de sistemas de agua caliente, bomba de
+                        agua y sistemas de riego.</p>
+                    <div class="professional-footer">
+                        <span class="price">Desde €35/hora</span>
+                        <button class="contact-btn">Contactar</button>
+                    </div>
+                </div>
+
+                <div class="professional-card">
+                    <div class="professional-info">
+                        <div class="avatar avatar-blue">LV</div>
+                        <div class="professional-details">
+                            <h4 class="professional-name">Luis Vargas</h4>
+                            <p class="professional-role">Fontanero Residencial</p>
+                            <div class="rating">
+                                <span class="stars">★★★★★</span>
+                                <span class="reviews">(38 reseñas)</span>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="professional-description">Servicios de fontanería para hogares. Reparaciones rápidas y
+                        precios justos.</p>
+                    <div class="professional-footer">
+                        <span class="price">Desde €22/hora</span>
+                        <button class="contact-btn">Contactar</button>
+                    </div>
+                </div>
+
+                <div class="professional-card">
+                    <div class="professional-info">
+                        <div class="avatar avatar-green">EM</div>
+                        <div class="professional-details">
+                            <h4 class="professional-name">Elena Morales</h4>
+                            <p class="professional-role">Técnica en Plomería</p>
+                            <div class="rating">
+                                <span class="stars">★★★★☆</span>
+                                <span class="reviews">(24 reseñas)</span>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="professional-description">Especializada en baños y cocinas. Instalación de sanitarios y
+                        accesorios modernos.</p>
+                    <div class="professional-footer">
+                        <span class="price">Desde €28/hora</span>
+                        <button class="contact-btn">Contactar</button>
+                    </div>
+                </div>
+
+                <div class="professional-card">
+                    <div class="professional-info">
+                        <div class="avatar avatar-purple">RH</div>
+                        <div class="professional-details">
+                            <h4 class="professional-name">Roberto Hernández</h4>
+                            <p class="professional-role">Fontanero Certificado</p>
+                            <div class="rating">
+                                <span class="stars">★★★★★</span>
+                                <span class="reviews">(41 reseñas)</span>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="professional-description">Detección de fugas con tecnología avanzada. Reparaciones sin
+                        romper paredes.</p>
+                    <div class="professional-footer">
+                        <span class="price">Desde €40/hora</span>
+                        <button class="contact-btn">Contactar</button>
+                    </div>
+                </div>
+
+                <div class="professional-card">
+                    <div class="professional-info">
+                        <div class="avatar avatar-orange">SF</div>
+                        <div class="professional-details">
+                            <h4 class="professional-name">Sandra Flores</h4>
+                            <p class="professional-role">Plomera Profesional</p>
+                            <div class="rating">
+                                <span class="stars">★★★★☆</span>
+                                <span class="reviews">(16 reseñas)</span>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="professional-description">Servicio integral de fontanería. Mantenimiento preventivo y
+                        reparaciones de emergencia.</p>
+                    <div class="professional-footer">
+                        <span class="price">Desde €26/hora</span>
+                        <button class="contact-btn">Contactar</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="load-more-container">
+                <button class="load-more-btn">Cargar más resultados</button>
+            </div>
+        </section>
+    </main>
+
+    <script src="busquedascript.js"></script>
+</body>
+
+</html>
