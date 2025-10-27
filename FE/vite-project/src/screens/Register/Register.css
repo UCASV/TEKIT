@@ -1,0 +1,73 @@
+.register-page {
+  padding: 2rem 0;
+}
+
+.account-type-card {
+  transition: all 0.3s ease;
+  border: 2px solid #e5e7eb;
+  cursor: pointer;
+}
+
+.account-type-card:hover {
+  border-color: #4f46e5;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.15);
+}
+
+.account-type-card.selected {
+  border-color: #4f46e5;
+  background-color: #eef2ff;
+  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);
+}
+
+.progress-bar {
+  background-color: #4f46e5;
+  transition: width 0.3s ease;
+}
+
+.form-label {
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 0.5rem;
+}
+
+.form-control:focus,
+.form-select:focus {
+  border-color: #4f46e5;
+  box-shadow: 0 0 0 0.2rem rgba(79, 70, 229, 0.15);
+}
+
+.btn-primary {
+  background-color: #4f46e5;
+  border-color: #4f46e5;
+  font-weight: 500;
+  padding: 0.625rem 1.5rem;
+}
+
+.btn-primary:hover {
+  background-color: #3730a3;
+  border-color: #3730a3;
+}
+
+.btn-primary:disabled {
+  background-color: #9ca3af;
+  border-color: #9ca3af;
+}
+
+.btn-outline-secondary {
+  font-weight: 500;
+}
+
+@media (max-width: 576px) {
+  .register-page {
+    padding: 1rem 0;
+  }
+  
+  .card-body {
+    padding: 2rem !important;
+  }
+  
+  .account-type-card {
+    margin-bottom: 1rem;
+  }
+}
