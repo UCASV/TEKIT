@@ -7,7 +7,7 @@ function Footer() {
     <footer className="footer bg-dark text-white">
       <Container className="py-5">
         <Row className="g-4">
-          {/* Columna 1 - Información */}
+
           <Col md={6} lg={3}>
             <h4 className="footer-title mb-3">TEKIT 503</h4>
             <p className="footer-description text-muted">
@@ -15,7 +15,6 @@ function Footer() {
             </p>
           </Col>
 
-          {/* Columna 2 - Para Clientes */}
           <Col md={6} lg={3}>
             <h5 className="footer-subtitle mb-3">Para Clientes</h5>
             <ul className="footer-list list-unstyled">
@@ -37,7 +36,6 @@ function Footer() {
             </ul>
           </Col>
 
-          {/* Columna 3 - Para Profesionales */}
           <Col md={6} lg={3}>
             <h5 className="footer-subtitle mb-3">Para Profesionales</h5>
             <ul className="footer-list list-unstyled">
@@ -59,7 +57,6 @@ function Footer() {
             </ul>
           </Col>
 
-          {/* Columna 4 - Soporte */}
           <Col md={6} lg={3}>
             <h5 className="footer-subtitle mb-3">Soporte</h5>
             <ul className="footer-list list-unstyled">
@@ -82,7 +79,6 @@ function Footer() {
           </Col>
         </Row>
 
-        {/* Footer Bottom */}
         <Row className="mt-4 pt-4 border-top border-secondary">
           <Col className="text-center">
             <p className="copyright text-muted mb-0">

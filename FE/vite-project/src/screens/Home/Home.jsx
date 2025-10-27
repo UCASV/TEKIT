@@ -1,21 +1,24 @@
+import { useState } from 'react'
 import { Container, Row, Col, Card, Button, Form, InputGroup } from 'react-bootstrap'
 import { useNavigate } from 'react-router-dom'
 import './Home.css'
 
 function Home() {
   const navigate = useNavigate()
+  const [searchQuery, setSearchQuery] = useState('')
 
   const categories = [
-    { icon: '🧹', title: 'Limpieza' },
-    { icon: '🚿', title: 'Fontanería' },
-    { icon: '🧱', title: 'Construcción' },
-    { icon: '🧵', title: 'Sastrería & Costurería' },
-    { icon: '👞', title: 'Zapatería' },
-    { icon: '📚', title: 'Clases Particulares' }
+    { icon: '🧹', title: 'Limpieza', id: 'limpieza' },
+    { icon: '🚿', title: 'Fontanería', id: 'fontaneria' },
+    { icon: '🧱', title: 'Construcción', id: 'construccion' },
+    { icon: '🧵', title: 'Sastrería & Costurería', id: 'sastreria' },
+    { icon: '👞', title: 'Zapatería', id: 'zapateria' },
+    { icon: '📚', title: 'Clases Particulares', id: 'clases' }
   ]
 
   const professionals = [
     {
+      id: 1,
       initials: 'LY',
       name: 'Lamine Yamal',
       role: 'Semi jugador profesional',
@@ -26,6 +29,7 @@ function Home() {
       avatarClass: 'bg-gradient-purple'
     },
     {
+      id: 2,
       initials: 'AA',
       name: 'Andrea Álvarez',
       role: 'Diseñadora UX/UI',
@@ -36,6 +40,7 @@ function Home() {
       avatarClass: 'bg-gradient-blue'
     },
     {
+      id: 3,
       initials: 'KM',
       name: 'Kylian Mbappe',
       role: 'Jugador Profesional',
@@ -67,17 +72,21 @@ function Home() {
 
   const handleSearch = (e) => {
     e.preventDefault()
-    const searchTerm = e.target.search.value
-    console.log('Buscando:', searchTerm)
+    if (searchQuery.trim()) {
+      navigate(`/buscar?q=${encodeURIComponent(searchQuery)}`)
+    }
   }
 
-  const handleContact = (name) => {
-    console.log('Contactando con:', name)
+  const handleCategoryClick = (categoryId) => {
+    navigate(`/buscar?q=${categoryId}`)
+  }
+
+  const handleContact = (professionalId) => {
+    navigate(`/profesional/${professionalId}`)
   }
 
   return (
     <div className="home-page">
-      {/* Hero Section */}
       <section className="hero-section text-white text-center py-5">
         <Container className="py-5">
           <h2 className="display-4 fw-bold mb-4">Contrata tu solución a un clic</h2>
@@ -88,9 +97,10 @@ function Home() {
             <InputGroup size="lg">
               <Form.Control
                 type="text"
-                name="search"
                 placeholder="¿Qué servicio necesitas?"
                 className="search-input"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
               />
               <Button variant="light" type="submit" className="search-btn fw-semibold">
                 Buscar
@@ -100,14 +110,17 @@ function Home() {
         </Container>
       </section>
 
-      {/* Categories Section */}
       <section className="categories-section py-5 bg-white">
         <Container>
           <h3 className="section-title text-center mb-5">Categorías Populares</h3>
           <Row className="g-4">
             {categories.map((category, index) => (
               <Col key={index} xs={6} md={4} lg={2}>
-                <Card className="category-card text-center h-100 border-0">
+                <Card 
+                  className="category-card text-center h-100 border-0"
+                  onClick={() => handleCategoryClick(category.id)}
+                  style={{ cursor: 'pointer' }}
+                >
                   <Card.Body className="d-flex flex-column align-items-center justify-content-center">
                     <div className="category-icon mb-3">{category.icon}</div>
                     <Card.Title className="h6 mb-0">{category.title}</Card.Title>
@@ -119,12 +132,15 @@ function Home() {
         </Container>
       </section>
 
-      {/* Professionals Section */}
       <section className="professionals-section py-5">
         <Container>
           <div className="d-flex justify-content-between align-items-center mb-5">
             <h3 className="section-title mb-0">Perfiles Destacados</h3>
-            <Button variant="link" className="text-primary fw-semibold text-decoration-none">
+            <Button 
+              variant="link" 
+              className="text-primary fw-semibold text-decoration-none"
+              onClick={() => navigate('/buscar')}
+            >
               Ver todos →
             </Button>
           </div>
@@ -141,7 +157,7 @@ function Home() {
                         <h5 className="mb-1">{prof.name}</h5>
                         <p className="text-muted mb-1 small">{prof.role}</p>
                         <div className="rating">
-                          <span className="text-warning">★★★★★</span>
+                          <span className="text-warning">{'★'.repeat(prof.rating)}{'☆'.repeat(5-prof.rating)}</span>
                           <span className="text-muted small ms-2">({prof.reviews} reseñas)</span>
                         </div>
                       </div>
@@ -154,7 +170,7 @@ function Home() {
                       <Button 
                         variant="primary" 
                         size="sm"
-                        onClick={() => handleContact(prof.name)}
+                        onClick={() => handleContact(prof.id)}
                       >
                         Contactar
                       </Button>
@@ -167,7 +183,6 @@ function Home() {
         </Container>
       </section>
 
-      {/* How it Works Section */}
       <section className="how-it-works-section py-5 bg-white">
         <Container>
           <h3 className="section-title text-center mb-5">¿Cómo Funciona?</h3>
@@ -187,7 +202,6 @@ function Home() {
         </Container>
       </section>
 
-      {/* CTA Section */}
       <section className="cta-section text-white text-center py-5">
         <Container className="py-4">
           <h3 className="h2 mb-3">¿Buscas sacar provecho de tus habilidades o conocimientos?</h3>

@@ -1,4 +1,3 @@
-/* Hero Section */
 .hero-section {
   background: linear-gradient(135deg, #351491 0%, #101728 100%);
   min-height: 400px;
@@ -26,7 +25,6 @@
   color: white !important;
 }
 
-/* Categories Section */
 .category-card {
   background-color: #f9fafb;
   border-radius: 0.75rem;
@@ -44,7 +42,6 @@
   font-size: 2.5rem;
 }
 
-/* Professionals Section */
 .professionals-section {
   background-color: #f9fafb;
 }
@@ -82,7 +79,6 @@
   font-size: 1.1rem;
 }
 
-/* How it Works Section */
 .step-icon {
   width: 80px;
   height: 80px;
@@ -94,7 +90,6 @@
   font-size: 2rem;
 }
 
-/* CTA Section */
 .cta-section {
   background-color: #4f46e5;
 }
@@ -109,14 +104,12 @@
   background-color: #f3f4f6 !important;
 }
 
-/* Section Titles */
 .section-title {
   font-size: 1.875rem;
   font-weight: 700;
   color: #111827;
 }
 
-/* Responsive adjustments */
 @media (max-width: 768px) {
   .hero-section h2 {
     font-size: 2rem;
