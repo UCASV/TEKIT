@@ -3,6 +3,10 @@
   margin-top: auto;
 }
 
+.footer .text-muted {
+  color: #ffffff !important;
+}
+
 .footer-title {
   font-size: 1.25rem;
   font-weight: 700;
@@ -12,6 +16,7 @@
 .footer-description {
   font-size: 0.95rem;
   line-height: 1.6;
+  color: white;
 }
 
 .footer-subtitle {
@@ -23,12 +28,14 @@
 .footer-link {
   transition: color 0.3s ease;
   font-size: 0.95rem;
+  color: white;
 }
 
 .footer-link:hover {
-  color: white !important;
+  color: grey !important;
 }
 
-.copyright {
+.copyright  {
   font-size: 0.9rem;
+  color: white;
 }
