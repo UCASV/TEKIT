@@ -19,7 +19,7 @@ function Login() {
   const handleSubmit = (e) => {
     e.preventDefault()
     console.log('Login data:', formData)
-    // Aquí irá la lógica de autenticación
+    
     navigate('/dashboard')
   }
 
