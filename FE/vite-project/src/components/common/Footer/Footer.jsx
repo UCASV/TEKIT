@@ -23,11 +23,7 @@ function Footer() {
                   Buscar Servicios
                 </Link>
               </li>
-              <li className="mb-2">
-                <Link to="/como-funciona" className="footer-link text-muted text-decoration-none">
-                  Cómo Funciona
-                </Link>
-              </li>
+              
               <li className="mb-2">
                 <Link to="/garantias" className="footer-link text-muted text-decoration-none">
                   Garantías
