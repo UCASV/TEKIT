@@ -1,17 +1,11 @@
 // =============================================
 // BE/server.js - Punto de entrada
 // =============================================
-import express from 'express';
 import dotenv from 'dotenv';
-import cors from 'cors';
-import morgan from 'morgan';
-import bodyParser from 'body-parser';
-import routes from './routes/index.js';
-import connectDB from './database.js';
+import app from './src/app.js';
+import { getConnection } from './src/config/database.js';
 
 dotenv.config();
-import app from './app.js';
-import { getConnection } from './config/database.js';
 
 const PORT = process.env.PORT || 5000;
 
@@ -46,8 +40,3 @@ process.on('SIGINT', () => {
     console.log('👋 SIGINT recibido, cerrando servidor...');
     process.exit(0);
 });
-
-
-
-
-
