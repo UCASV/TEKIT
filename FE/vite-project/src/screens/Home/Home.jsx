@@ -202,7 +202,7 @@ function Home() {
         </Container>
       </section>
 
-      <section className="cta-section text-white text-center py-5">
+<section className="cta-section text-white text-center py-5">
         <Container className="py-4">
           <h3 className="h2 mb-3">
             ¿Buscas sacar provecho de tus habilidades o conocimientos?
@@ -210,7 +210,7 @@ function Home() {
           <p className="lead mb-4">
             Únete a nuestra comunidad y comienza a ofrecer tus servicios a miles de clientes potenciales
           </p>
-          <div className="d-flex justify-content-center">
+          <div className="d-flex justify-content-center gap-3">
             <Button
               variant="light"
               size="lg"
@@ -219,6 +219,27 @@ function Home() {
             >
               Crear mi Perfil
             </Button>
+          </div>
+          
+          {/* Botones experimentales para ver perfiles */}
+          <div className="mt-4 pt-4 border-top border-white border-opacity-25">
+            <p className="mb-3 text-white-50 small">Vista de Perfiles (Experimental)</p>
+            <div className="d-flex justify-content-center gap-3 flex-wrap">
+              <Button
+                variant="outline-light"
+                size="sm"
+                onClick={() => navigate('/perfil-cliente')}
+              >
+                👤 Ver Perfil Cliente
+              </Button>
+              <Button
+                variant="outline-light"
+                size="sm"
+                onClick={() => navigate('/perfil-contratante')}
+              >
+                💼 Ver Perfil Profesional
+              </Button>
+            </div>
           </div>
         </Container>
       </section>
