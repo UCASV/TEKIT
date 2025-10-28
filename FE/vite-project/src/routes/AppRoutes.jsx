@@ -12,6 +12,9 @@ import Ayuda from '../screens/FooterScreens/Ayuda'
 import Consejos from '../screens/FooterScreens/Consejos'
 import Garantias from '../screens/FooterScreens/Garantias'
 import Terminos from '../screens/FooterScreens/Terminos'
+import Categories from '../screens/Categories/Categories'
+
+
 
 function AppRoutes() {
   return (
@@ -29,6 +32,7 @@ function AppRoutes() {
         <Route path="/consejos" element={<Consejos />} />
         <Route path="/garantias" element={<Garantias />} />
         <Route path="/terminos" element={<Terminos />} />
+        <Route path="/categorias" element={<Categories />} />
       </Route>
 
       <Route path="*" element={<NotFound />} />
