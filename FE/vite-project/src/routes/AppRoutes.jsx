@@ -5,6 +5,7 @@ import Search from '../screens/Search/Search'
 import Login from '../screens/Login/Login'
 import Register from '../screens/Register/Register'
 import Dashboard from '../screens/Dashboard/Dashboard'
+import PerfilCliente from '../screens/PerfilCliente/PerfilCliente'
 import NotFound from '../screens/NotFound/NotFound'
 
 function AppRoutes() {
@@ -17,6 +18,7 @@ function AppRoutes() {
         <Route path="/" element={<Home />} />
         <Route path="/buscar" element={<Search />} />
         <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/perfil-cliente" element={<PerfilCliente/>} />
       </Route>
 
       <Route path="*" element={<NotFound />} />
