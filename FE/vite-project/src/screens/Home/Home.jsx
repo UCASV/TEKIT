@@ -116,7 +116,7 @@ function Home() {
           <Row className="g-4">
             {categories.map((category, index) => (
               <Col key={index} xs={6} md={4} lg={2}>
-                <Card 
+                <Card
                   className="category-card text-center h-100 border-0"
                   onClick={() => handleCategoryClick(category.id)}
                   style={{ cursor: 'pointer' }}
@@ -136,8 +136,8 @@ function Home() {
         <Container>
           <div className="d-flex justify-content-between align-items-center mb-5">
             <h3 className="section-title mb-0">Perfiles Destacados</h3>
-            <Button 
-              variant="link" 
+            <Button
+              variant="link"
               className="text-primary fw-semibold text-decoration-none"
               onClick={() => navigate('/buscar')}
             >
@@ -157,7 +157,7 @@ function Home() {
                         <h5 className="mb-1">{prof.name}</h5>
                         <p className="text-muted mb-1 small">{prof.role}</p>
                         <div className="rating">
-                          <span className="text-warning">{'★'.repeat(prof.rating)}{'☆'.repeat(5-prof.rating)}</span>
+                          <span className="text-warning">{'★'.repeat(prof.rating)}{'☆'.repeat(5 - prof.rating)}</span>
                           <span className="text-muted small ms-2">({prof.reviews} reseñas)</span>
                         </div>
                       </div>
@@ -167,8 +167,8 @@ function Home() {
                     </Card.Text>
                     <div className="d-flex justify-content-between align-items-center">
                       <span className="price text-primary fw-bold">Desde {prof.price}</span>
-                      <Button 
-                        variant="primary" 
+                      <Button
+                        variant="primary"
                         size="sm"
                         onClick={() => handleContact(prof.id)}
                       >
@@ -204,20 +204,25 @@ function Home() {
 
       <section className="cta-section text-white text-center py-5">
         <Container className="py-4">
-          <h3 className="h2 mb-3">¿Buscas sacar provecho de tus habilidades o conocimientos?</h3>
+          <h3 className="h2 mb-3">
+            ¿Buscas sacar provecho de tus habilidades o conocimientos?
+          </h3>
           <p className="lead mb-4">
             Únete a nuestra comunidad y comienza a ofrecer tus servicios a miles de clientes potenciales
           </p>
-          <Button 
-            variant="light" 
-            size="lg" 
-            className="cta-main-btn fw-semibold"
-            onClick={() => navigate('/register')}
-          >
-            Crear mi Perfil
-          </Button>
+          <div className="d-flex justify-content-center">
+            <Button
+              variant="light"
+              size="lg"
+              className="cta-main-btn fw-semibold"
+              onClick={() => navigate('/register')}
+            >
+              Crear mi Perfil
+            </Button>
+          </div>
         </Container>
       </section>
+
     </div>
   )
 }
