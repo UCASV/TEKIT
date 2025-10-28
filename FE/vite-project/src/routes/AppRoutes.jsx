@@ -8,10 +8,10 @@ import Dashboard from '../screens/Dashboard/Dashboard'
 import PerfilCliente from '../screens/PerfilCliente/PerfilCliente'
 import PerfilContratante from '../screens/PerfilContratante/PerfilContratante'
 import NotFound from '../screens/NotFound/NotFound'
-import Garantias from '../screens/FooterScreens/Garantias';
-import Consejos from '../screens/FooterScreens/Consejos';
-import Ayuda from '../screens/FooterScreens/Ayuda';
-import Terminos from '../screens/FooterScreens/Terminos';
+import Ayuda from '../screens/FooterScreens/Ayuda'
+import Consejos from '../screens/FooterScreens/Consejos'
+import Garantias from '../screens/FooterScreens/Garantias'
+import Terminos from '../screens/FooterScreens/Terminos'
 
 function AppRoutes() {
   return (
@@ -25,16 +25,13 @@ function AppRoutes() {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/perfil-cliente" element={<PerfilCliente/>} />
         <Route path="/perfil-contratante" element={<PerfilContratante/>} />
+        <Route path="/ayuda" element={<Ayuda />} />
+        <Route path="/consejos" element={<Consejos />} />
+        <Route path="/garantias" element={<Garantias />} />
+        <Route path="/terminos" element={<Terminos />} />
       </Route>
 
       <Route path="*" element={<NotFound />} />
-
-      <Route path="/garantias" element={<Garantias />} />
-      <Route path="/consejos" element={<Consejos />} />
-      <Route path="/ayuda" element={<Ayuda />} />
-      <Route path="/terminos" element={<Terminos />} />
-
-
     </Routes>
   )
 }
