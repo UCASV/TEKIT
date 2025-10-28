@@ -88,20 +88,16 @@ const CategoriesClient = () => {
     }
   ];
 
-  // Filtrar categorías por búsqueda
   const categoriasFiltradas = categorias.filter(cat =>
     cat.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
     cat.descripcion.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // Categorías más populares (top 4)
   const categoriasPopulares = [...categorias]
     .sort((a, b) => b.profesionales - a.profesionales)
     .slice(0, 4);
 
-  // Manejar clic en categoría
   const handleCategoryClick = (categoriaId, categoriaNombre) => {
-    // Navegar a la búsqueda de profesionales filtrada por categoría
     navigate(`/search?category=${categoriaId}&name=${encodeURIComponent(categoriaNombre)}`);
   };
 
@@ -120,7 +116,7 @@ const CategoriesClient = () => {
   return (
     <div className="min-vh-100" style={{ backgroundColor: '#f9fafb' }}>
       <div className="container py-4">
-        {/* Header con búsqueda */}
+        {}
         <div className="card border-0 shadow-sm mb-4">
           <div className="card-body p-4">
             <div className="text-center mb-4">
@@ -134,7 +130,7 @@ const CategoriesClient = () => {
               </p>
             </div>
 
-            {/* Buscador */}
+            {}
             <div className="position-relative" style={{ maxWidth: '600px', margin: '0 auto' }}>
               <Search
                 className="position-absolute text-muted"
@@ -153,7 +149,7 @@ const CategoriesClient = () => {
           </div>
         </div>
 
-        {/* Categorías Populares */}
+        {}
         {!searchTerm && (
           <div className="mb-4">
             <h2 className="h5 fw-bold mb-3 d-flex align-items-center gap-2">
@@ -185,7 +181,7 @@ const CategoriesClient = () => {
           </div>
         )}
 
-        {/* Todas las Categorías */}
+        {}
         <div className="card border-0 shadow-sm">
           <div className="card-body p-4">
             <h2 className="h5 fw-bold mb-4">
@@ -225,7 +221,7 @@ const CategoriesClient = () => {
                       }}
                     >
                       <div className="d-flex align-items-start gap-3">
-                        {/* Icono */}
+                        {}
                         <div
                           className="rounded d-flex align-items-center justify-content-center flex-shrink-0"
                           style={{
@@ -238,7 +234,7 @@ const CategoriesClient = () => {
                           {categoria.icono}
                         </div>
                         
-                        {/* Contenido */}
+                        {}
                         <div className="flex-grow-1">
                           <div className="d-flex justify-content-between align-items-start mb-2">
                             <div className="flex-grow-1">
@@ -261,7 +257,7 @@ const CategoriesClient = () => {
                               </div>
                             </div>
                             
-                            {/* Flecha */}
+                            {}
                             <div className="d-flex align-items-center ps-3">
                               <ChevronRight size={24} className="text-primary" />
                             </div>
@@ -276,7 +272,7 @@ const CategoriesClient = () => {
           </div>
         </div>
 
-        {/* Información adicional */}
+        {}
         <div className="row g-4 mt-2">
           <div className="col-md-4">
             <div className="card border-0 shadow-sm h-100" style={{ backgroundColor: '#eef2ff' }}>
