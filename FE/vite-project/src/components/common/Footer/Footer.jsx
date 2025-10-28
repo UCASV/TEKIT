@@ -9,7 +9,7 @@ function Footer() {
         <Row className="g-4">
 
           <Col md={6} lg={3}>
-            <h4 className="footer-title mb-3">TEKIT 503</h4>
+            <h4 className="footer-title mb-3">TEKIT</h4>
             <p className="footer-description text-muted">
               La plataforma ideal para ofrecer y contratar servicios de todo tipo.
             </p>
@@ -82,7 +82,7 @@ function Footer() {
         <Row className="mt-4 pt-4 border-top border-secondary">
           <Col className="text-center">
             <p className="copyright text-muted mb-0">
-              © 2025 TEKIT 503. Todos los derechos reservados.
+              © 2025 TEKIT. Todos los derechos reservados.
             </p>
           </Col>
         </Row>
