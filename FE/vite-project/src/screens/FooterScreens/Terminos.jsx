@@ -14,7 +14,7 @@ function Terminos() {
         </Container>
       </section>
 
-      <section className="py-5">
+      <section className="py-5 terms-section-content">
         <Container>
           <h3 className="fw-bold mb-4">1. Aceptación de los Términos</h3>
           <p className="text-muted">
@@ -76,7 +76,7 @@ function Terminos() {
         <Container className="py-4">
           <h3 className="h2 mb-3">¿Necesitas más información legal?</h3>
           <p className="mb-4">Nuestro equipo puede ayudarte con cualquier duda.</p>
-          <button className="cta-main-btn">Contactar al equipo legal</button>
+          <Button className="cta-main-btn">Contactar al equipo legal</Button>
         </Container>
       </section>
     </>

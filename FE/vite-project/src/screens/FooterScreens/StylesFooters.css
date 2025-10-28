@@ -87,13 +87,12 @@ body {
   background-color: #ffffff;
 }
 
-
-
 .accordion-button:not(.collapsed) {
  
   background-color: #eef2ff;
   color: #351491;
   justify-content: center;
+  display: block;
 }
 
 .accordion-button:focus {
@@ -110,6 +109,11 @@ body {
   padding: 2rem;
   text-align: center;
   border: 2px solid #e5e7eb;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
 }
 
 .contact-icon {
@@ -127,13 +131,22 @@ body {
 
 .terms-content {
   background-color: #ffffff;
-  padding: 3rem;
+  padding: 10rem;
   border-radius: 0.75rem;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+  justify-content: justify;
+}
+.terms-section-content .container{
+ max-width: 700px;
 }
 
+.terms-section-content p{
+  margin-bottom: 1rem;
+  align-content: justify;
+}
 .terms-section {
   margin-bottom: 2.5rem;
+  padding: 50%;
 }
 
 .terms-section h3 {
@@ -162,6 +175,10 @@ body {
   right: 50%;
   margin-left: -50vw;
   margin-right: -50vw;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
 }
 
 .cta-main-btn {
@@ -171,6 +188,8 @@ body {
   background-color: white;
   border: none;
   font-weight: 600;
+  display: inline-block;
+  margin: 0 auto;
 }
 
 
