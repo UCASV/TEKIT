@@ -1,10 +1,13 @@
 
-// =============================================
-// BE/src/app.js - Configuración de Express
-// =============================================
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+
+import authRoutes from './routes/authRoutes.js';
+import professionalRoutes from './routes/professionalRoutes.js';
+import categoryRoutes from './routes/categoryRoutes.js';
+import reviewRoutes from './routes/reviewRoutes.js';
+import contactRoutes from './routes/contactRoutes.js';
 
 dotenv.config();
 
@@ -18,6 +21,14 @@ app.use(cors({
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Logging middleware en desarrollo
+if (process.env.NODE_ENV === 'development') {
+    app.use((req, res, next) => {
+        console.log(`${req.method} ${req.path}`);
+        next();
+    });
+}
 
 // Ruta de prueba
 app.get('/', (req, res) => {
@@ -36,6 +47,13 @@ app.get('/health', (req, res) => {
         timestamp: new Date().toISOString()
     });
 });
+
+// Rutas API
+app.use('/api/auth', authRoutes);
+app.use('/api/professionals', professionalRoutes);
+app.use('/api/categories', categoryRoutes);
+app.use('/api/reviews', reviewRoutes);
+app.use('/api/contacts', contactRoutes);
 
 // Manejo de rutas no encontradas
 app.use((req, res) => {
