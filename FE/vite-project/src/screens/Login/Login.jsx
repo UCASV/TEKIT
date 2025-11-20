@@ -1,26 +1,42 @@
-import { Container, Row, Col, Card, Form, Button } from 'react-bootstrap'
-import { Link, useNavigate } from 'react-router-dom'
+import { Container, Row, Col, Card, Form, Button, Alert } from 'react-bootstrap'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useState } from 'react'
+import { useAuth } from '../context/AuthContext'
 
 function Login() {
   const navigate = useNavigate()
+  const location = useLocation()
+  const { login } = useAuth()
+  
   const [formData, setFormData] = useState({
     email: '',
     password: ''
   })
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [successMessage] = useState(location.state?.message || '')
 
   const handleChange = (e) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value
     })
+    setError('')
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    console.log('Login data:', formData)
-    
-    navigate('/dashboard')
+    setError('')
+    setLoading(true)
+
+    try {
+      await login(formData)
+      navigate('/dashboard')
+    } catch (err) {
+      setError(err.message || 'Error al iniciar sesión. Verifica tus credenciales.')
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -35,6 +51,18 @@ function Login() {
                   <p className="text-muted">Inicia sesión en tu cuenta</p>
                 </div>
 
+                {successMessage && (
+                  <Alert variant="success" dismissible>
+                    {successMessage}
+                  </Alert>
+                )}
+
+                {error && (
+                  <Alert variant="danger" dismissible onClose={() => setError('')}>
+                    {error}
+                  </Alert>
+                )}
+
                 <Form onSubmit={handleSubmit}>
                   <Form.Group className="mb-3">
                     <Form.Label>Email</Form.Label>
@@ -45,6 +73,7 @@ function Login() {
                       value={formData.email}
                       onChange={handleChange}
                       required
+                      disabled={loading}
                     />
                   </Form.Group>
 
@@ -57,6 +86,7 @@ function Login() {
                       value={formData.password}
                       onChange={handleChange}
                       required
+                      disabled={loading}
                     />
                   </Form.Group>
 
@@ -67,8 +97,13 @@ function Login() {
                     </Link>
                   </div>
 
-                  <Button variant="primary" type="submit" className="w-100 mb-3">
-                    Iniciar Sesión
+                  <Button 
+                    variant="primary" 
+                    type="submit" 
+                    className="w-100 mb-3"
+                    disabled={loading}
+                  >
+                    {loading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
                   </Button>
 
                   <div className="text-center">
