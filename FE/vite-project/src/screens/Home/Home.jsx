@@ -1,57 +1,41 @@
-import { useState } from 'react'
-import { Container, Row, Col, Card, Button, Form, InputGroup } from 'react-bootstrap'
+import { useState, useEffect } from 'react'
+import { Container, Row, Col, Card, Button, Form, InputGroup, Spinner } from 'react-bootstrap'
 import { useNavigate } from 'react-router-dom'
+import { professionalAPI, categoryAPI } from '../../services/api' // Importar APIs
 import './Home.css'
 
 function Home() {
   const navigate = useNavigate()
   const [searchQuery, setSearchQuery] = useState('')
+  const [categories, setCategories] = useState([])
+  const [professionals, setProfessionals] = useState([])
+  const [loading, setLoading] = useState(true)
 
-  const categories = [
-    { icon: '🧹', title: 'Limpieza', id: 'limpieza' },
-    { icon: '🚿', title: 'Fontanería', id: 'fontaneria' },
-    { icon: '🧱', title: 'Construcción', id: 'construccion' },
-    { icon: '🧵', title: 'Sastrería & Costurería', id: 'sastreria' },
-    { icon: '👞', title: 'Zapatería', id: 'zapateria' },
-    { icon: '📚', title: 'Clases Particulares', id: 'clases' }
-  ]
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const catResponse = await categoryAPI.getAll()
+        setCategories(catResponse.data || [])
 
-  const professionals = [
-    {
-      id: 1,
-      initials: 'LY',
-      name: 'Lamine Yamal',
-      role: 'Semi jugador profesional',
-      rating: 2,
-      reviews: 47,
-      description: 'Hablo antes del partido y despues no hago nada',
-      price: 'Un beso de Nicki Nicole/gol o asistencia',
-      avatarClass: 'bg-gradient-purple'
-    },
-    {
-      id: 2,
-      initials: 'AA',
-      name: 'Andrea Álvarez',
-      role: 'Diseñadora UX/UI',
-      rating: 5,
-      reviews: 32,
-      description: 'Diseño experiencias digitales que conectan con los usuarios. Especializado en apps móviles y plataformas web.',
-      price: '€40/hora',
-      avatarClass: 'bg-gradient-blue'
-    },
-    {
-      id: 3,
-      initials: 'KM',
-      name: 'Kylian Mbappe',
-      role: 'Jugador Profesional',
-      rating: 5,
-      reviews: 28,
-      description: 'Violo equipos a domicilio o en casa (última chamba contra el barca)',
-      price: '€60/gol',
-      avatarClass: 'bg-gradient-green'
+        // Obtener los 3 mejores profesionales por calificación
+        const profResponse = await professionalAPI.search({})
+        setProfessionals((profResponse.data.professionals || []).slice(0, 3))
+      } catch (e) {
+        console.error('Error fetching data for Home:', e)
+      } finally {
+        setLoading(false)
+      }
     }
-  ]
+    fetchData()
+  }, [])
+  
+  // Lógica para renderizar estrellas (extraída de PerfilContratante.jsx)
+  const renderStars = (rating) => {
+    const roundedRating = Math.round(rating || 0)
+    return '★'.repeat(roundedRating) + '☆'.repeat(5 - roundedRating)
+  }
 
+  // Hardcoded steps (part of the static UI guide)
   const steps = [
     {
       icon: '🔍',
@@ -77,12 +61,27 @@ function Home() {
     }
   }
 
-  const handleCategoryClick = (categoryId) => {
-    navigate(`/buscar?q=${categoryId}`)
+  const handleCategoryClick = (categoryId, categoryName) => {
+    navigate(`/buscar?category=${categoryId}&name=${encodeURIComponent(categoryName)}`)
   }
 
-  const handleContact = (professionalId) => {
+  const handleProfessionalClick = (professionalId) => {
     navigate(`/profesional/${professionalId}`)
+  }
+
+  // Random gradient for avatar placeholder (FE only visual utility)
+  const getRandomGradient = () => {
+    const gradients = ['bg-gradient-purple', 'bg-gradient-blue', 'bg-gradient-green'];
+    return gradients[Math.floor(Math.random() * gradients.length)];
+  };
+
+  if (loading) {
+    return (
+      <Container className="my-5 text-center" style={{ minHeight: '50vh' }}>
+        <Spinner animation="border" variant="primary" />
+        <p className="mt-2 text-muted">Cargando datos...</p>
+      </Container>
+    )
   }
 
   return (
@@ -114,16 +113,16 @@ function Home() {
         <Container>
           <h3 className="section-title text-center mb-5">Categorías Populares</h3>
           <Row className="g-4">
-            {categories.map((category, index) => (
+            {categories.slice(0, 6).map((category, index) => (
               <Col key={index} xs={6} md={4} lg={2}>
                 <Card
                   className="category-card text-center h-100 border-0"
-                  onClick={() => handleCategoryClick(category.id)}
+                  onClick={() => handleCategoryClick(category.id, category.nombre)}
                   style={{ cursor: 'pointer' }}
                 >
                   <Card.Body className="d-flex flex-column align-items-center justify-content-center">
-                    <div className="category-icon mb-3">{category.icon}</div>
-                    <Card.Title className="h6 mb-0">{category.title}</Card.Title>
+                    <div className="category-icon mb-3">{category.icono || '❓'}</div>
+                    <Card.Title className="h6 mb-0">{category.nombre}</Card.Title>
                   </Card.Body>
                 </Card>
               </Col>
@@ -146,31 +145,31 @@ function Home() {
           </div>
           <Row className="g-4">
             {professionals.map((prof, index) => (
-              <Col key={index} md={6} lg={4}>
+              <Col key={prof.usuario_id} md={6} lg={4}>
                 <Card className="professional-card h-100 border-0 shadow-sm">
                   <Card.Body>
                     <div className="d-flex align-items-center mb-3">
-                      <div className={`avatar ${prof.avatarClass} rounded-circle d-flex align-items-center justify-content-center text-white fw-bold`}>
-                        {prof.initials}
+                      <div className={`avatar ${getRandomGradient()} rounded-circle d-flex align-items-center justify-content-center text-white fw-bold`}>
+                        {prof.nombre.charAt(0)}{prof.apellido.charAt(0)}
                       </div>
                       <div className="ms-3 flex-grow-1">
-                        <h5 className="mb-1">{prof.name}</h5>
-                        <p className="text-muted mb-1 small">{prof.role}</p>
+                        <h5 className="mb-1">{prof.nombre} {prof.apellido}</h5>
+                        <p className="text-muted mb-1 small">{prof.titulo}</p>
                         <div className="rating">
-                          <span className="text-warning">{'★'.repeat(prof.rating)}{'☆'.repeat(5 - prof.rating)}</span>
-                          <span className="text-muted small ms-2">({prof.reviews} reseñas)</span>
+                          <span className="text-warning">{renderStars(prof.calificacion_promedio)}</span>
+                          <span className="text-muted small ms-2">({prof.total_resenas} reseñas)</span>
                         </div>
                       </div>
                     </div>
                     <Card.Text className="text-muted mb-3">
-                      {prof.description}
+                      {prof.descripcion.substring(0, 100)}{prof.descripcion.length > 100 ? '...' : ''}
                     </Card.Text>
                     <div className="d-flex justify-content-between align-items-center">
-                      <span className="price text-primary fw-bold">Desde {prof.price}</span>
+                      <span className="price text-primary fw-bold">Desde ${prof.tarifa_por_hora}/hora</span>
                       <Button
                         variant="primary"
                         size="sm"
-                        onClick={() => handleContact(prof.id)}
+                        onClick={() => handleProfessionalClick(prof.usuario_id)}
                       >
                         Contactar
                       </Button>
@@ -180,6 +179,11 @@ function Home() {
               </Col>
             ))}
           </Row>
+          {professionals.length === 0 && (
+            <div className="text-center text-muted py-4">
+              Aún no hay profesionales destacados. ¡Sé el primero!
+            </div>
+          )}
         </Container>
       </section>
 
@@ -202,7 +206,7 @@ function Home() {
         </Container>
       </section>
 
-<section className="cta-section text-white text-center py-5">
+      <section className="cta-section text-white text-center py-5">
         <Container className="py-4">
           <h3 className="h2 mb-3">
             ¿Buscas sacar provecho de tus habilidades o conocimientos?
@@ -220,8 +224,6 @@ function Home() {
               Crear mi Perfil
             </Button>
           </div>
-          
-
         </Container>
       </section>
 

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   Search, 
@@ -8,85 +8,29 @@ import {
   Users,
   TrendingUp
 } from 'lucide-react';
+import { categoryAPI } from '../../services/api'; // Importar API
 
 const CategoriesClient = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
-  
-  const categorias = [
-    {
-      id: 1,
-      nombre: "Fontanería",
-      descripcion: "Servicios de instalación y reparación de tuberías, grifos y sistemas de agua",
-      icono: "🔧",
-      profesionales: 45,
-      servicios: 128,
-      popularidad: "alta"
-    },
-    {
-      id: 2,
-      nombre: "Electricidad",
-      descripcion: "Instalación eléctrica, reparaciones y mantenimiento de sistemas eléctricos",
-      icono: "⚡",
-      profesionales: 38,
-      servicios: 156,
-      popularidad: "alta"
-    },
-    {
-      id: 3,
-      nombre: "Carpintería",
-      descripcion: "Fabricación y reparación de muebles, puertas, ventanas y estructuras de madera",
-      icono: "🪵",
-      profesionales: 32,
-      servicios: 94,
-      popularidad: "media"
-    },
-    {
-      id: 4,
-      nombre: "Limpieza",
-      descripcion: "Servicios de limpieza residencial y comercial, limpieza profunda",
-      icono: "🧹",
-      profesionales: 67,
-      servicios: 203,
-      popularidad: "alta"
-    },
-    {
-      id: 5,
-      nombre: "Pintura",
-      descripcion: "Pintura de interiores y exteriores, acabados decorativos",
-      icono: "🎨",
-      profesionales: 29,
-      servicios: 87,
-      popularidad: "media"
-    },
-    {
-      id: 6,
-      nombre: "Jardinería",
-      descripcion: "Mantenimiento de jardines, poda, diseño de espacios verdes",
-      icono: "🌱",
-      profesionales: 24,
-      servicios: 56,
-      popularidad: "media"
-    },
-    {
-      id: 7,
-      nombre: "Albañilería",
-      descripcion: "Construcción, remodelaciones y reparaciones estructurales",
-      icono: "🧱",
-      profesionales: 41,
-      servicios: 112,
-      popularidad: "alta"
-    },
-    {
-      id: 8,
-      nombre: "Mecánica",
-      descripcion: "Reparación y mantenimiento de vehículos",
-      icono: "🔩",
-      profesionales: 33,
-      servicios: 98,
-      popularidad: "media"
-    }
-  ];
+  const [categorias, setCategorias] = useState([]); 
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await categoryAPI.getAll();
+        setCategorias(response.data || []);
+      } catch (err) {
+        console.error('Error al obtener categorías:', err);
+        setError('No se pudieron cargar las categorías.');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchCategories();
+  }, []);
 
   // Filtrar categorías por búsqueda
   const categoriasFiltradas = categorias.filter(cat =>
@@ -94,19 +38,20 @@ const CategoriesClient = () => {
     cat.descripcion.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // Categorías más populares (top 4)
+  // Categorías más populares (top 4, ordenadas por número de profesionales)
   const categoriasPopulares = [...categorias]
-    .sort((a, b) => b.profesionales - a.profesionales)
+    .sort((a, b) => (b.total_profesionales || 0) - (a.total_profesionales || 0)) 
     .slice(0, 4);
 
-  // Manejar clic en categoría
+  // Manejar clic en categoría - FIX DE ENLACE A /buscar
   const handleCategoryClick = (categoriaId, categoriaNombre) => {
-    // Navegar a la búsqueda de profesionales filtrada por categoría
-    navigate(`/search?category=${categoriaId}&name=${encodeURIComponent(categoriaNombre)}`);
+    navigate(`/buscar?category=${categoriaId}&name=${encodeURIComponent(categoriaNombre)}`);
   };
 
-  const getBadgePopularidad = (popularidad) => {
-    if (popularidad === 'alta') {
+  const isPopular = (categoriaId) => categoriasPopulares.some(cat => cat.id === categoriaId);
+  
+  const renderPopularityBadge = (categoriaId) => {
+    if (isPopular(categoriaId)) {
       return (
         <span className="badge bg-danger d-inline-flex align-items-center gap-1">
           <TrendingUp size={12} />
@@ -116,6 +61,26 @@ const CategoriesClient = () => {
     }
     return null;
   };
+
+  if (loading) {
+    return (
+      <div className="min-vh-100 d-flex align-items-center justify-content-center">
+        <div className="spinner-border text-primary" role="status">
+          <span className="visually-hidden">Cargando categorías...</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-vh-100 d-flex align-items-center justify-content-center">
+        <div className="alert alert-danger" role="alert">
+          {error}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-vh-100" style={{ backgroundColor: '#f9fafb' }}>
@@ -153,7 +118,7 @@ const CategoriesClient = () => {
           </div>
         </div>
 
-        {/* Categorías Populares */}
+        {/* Categorías Populares (Usando datos dinámicos) */}
         {!searchTerm && (
           <div className="mb-4">
             <h2 className="h5 fw-bold mb-3 d-flex align-items-center gap-2">
@@ -175,7 +140,7 @@ const CategoriesClient = () => {
                       <h3 className="h6 fw-bold mb-1">{categoria.nombre}</h3>
                       <div className="small text-muted">
                         <Users size={14} className="me-1" />
-                        {categoria.profesionales} profesionales
+                        {categoria.total_profesionales || 0} profesionales
                       </div>
                     </div>
                   </div>
@@ -185,7 +150,7 @@ const CategoriesClient = () => {
           </div>
         )}
 
-        {/* Todas las Categorías */}
+        {/* Todas las Categorías (Usando datos dinámicos) */}
         <div className="card border-0 shadow-sm">
           <div className="card-body p-4">
             <h2 className="h5 fw-bold mb-4">
@@ -244,7 +209,7 @@ const CategoriesClient = () => {
                             <div className="flex-grow-1">
                               <h3 className="h6 fw-bold mb-1 d-flex align-items-center gap-2">
                                 {categoria.nombre}
-                                {getBadgePopularidad(categoria.popularidad)}
+                                {renderPopularityBadge(categoria.id)}
                               </h3>
                               <p className="text-muted small mb-2">
                                 {categoria.descripcion}
@@ -252,11 +217,11 @@ const CategoriesClient = () => {
                               <div className="d-flex gap-4 text-muted small">
                                 <div className="d-flex align-items-center gap-1">
                                   <Users size={16} />
-                                  <strong className="text-primary">{categoria.profesionales}</strong> profesionales
+                                  <strong className="text-primary">{categoria.total_profesionales || 0}</strong> profesionales
                                 </div>
                                 <div className="d-flex align-items-center gap-1">
                                   <Briefcase size={16} />
-                                  <strong className="text-success">{categoria.servicios}</strong> servicios
+                                  <strong className="text-success">{categoria.total_servicios || 0}</strong> servicios
                                 </div>
                               </div>
                             </div>

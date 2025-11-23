@@ -11,7 +11,8 @@ class AuthService {
                 return response.data;
             }
             
-            throw new Error('Error en el inicio de sesión');
+            // Si la respuesta indica fallo, pero no es un error HTTP, lanzar un error para ser capturado por el componente
+            throw new Error(response.message || 'Error en el inicio de sesión');
         } catch (error) {
             throw error;
         }
@@ -27,7 +28,7 @@ class AuthService {
                 return response.data;
             }
             
-            throw new Error('Error en el registro');
+            throw new Error(response.message || 'Error en el registro');
         } catch (error) {
             throw error;
         }
@@ -48,7 +49,18 @@ class AuthService {
     //Obtener usuario actual
     getCurrentUser() {
         const userStr = localStorage.getItem('user');
-        return userStr ? JSON.parse(userStr) : null;
+        if (userStr) {
+            try {
+                // Intentar parsear el JSON
+                return JSON.parse(userStr);
+            } catch (e) {
+                // Si el JSON es corrupto (causa de la pantalla en blanco), limpiar y devolver null
+                console.error("Error al parsear el usuario de localStorage:", e);
+                this.logout();
+                return null;
+            }
+        }
+        return null;
     }
 
     //Obtener token

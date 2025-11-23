@@ -2,8 +2,10 @@
 // BE/src/controllers/contactController.js - CORREGIDO
 // =============================================
 import { Contact } from '../models/Contact.js';
+import { Professional } from '../models/Professional.js'; // Importar modelo profesional
 import { successResponse, errorResponse } from '../config/constants.js';
 import { MESSAGES } from '../config/constants.js';
+import { getConnection, sql } from '../config/database.js'; // <--- IMPORTACIÓN AÑADIDA
 
 export const registerContact = async (req, res) => {
     try {
@@ -36,19 +38,20 @@ export const registerContact = async (req, res) => {
 export const getContactStats = async (req, res) => {
     try {
         // Obtener el perfil profesional del usuario autenticado
-        const pool = await getConnection();
-        const profile = await pool.request()
-            .input('usuario_id', sql.Int, req.user.id)
-            .query(`
-                SELECT id FROM Perfiles_Profesionales
-                WHERE usuario_id = @usuario_id
-            `);
+        const profile = await Professional.getFullProfile(req.user.id); 
 
-        if (!profile.recordset[0]) {
-            return errorResponse(res, 'Perfil profesional no encontrado', 404);
+        if (!profile || !profile.perfil_id) {
+            // Si no hay perfil profesional, devolver 0 stats en lugar de 404/500
+            return successResponse(res, {
+                total_contactos: 0,
+                clientes_unicos: 0,
+                contactos_semana: 0,
+                contactos_mes: 0
+            });
         }
 
-        const stats = await Contact.getStats(profile.recordset[0].id);
+        // Usar el perfil_id correcto
+        const stats = await Contact.getStats(profile.perfil_id);
         return successResponse(res, stats);
 
     } catch (error) {

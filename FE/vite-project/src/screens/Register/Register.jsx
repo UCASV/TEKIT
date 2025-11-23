@@ -1,10 +1,12 @@
-import { Container, Row, Col, Card, Form, Button, Alert } from 'react-bootstrap'
+import { Container, Row, Col, Card, Form, Button, Alert, Spinner } from 'react-bootstrap'
 import { Link, useNavigate } from 'react-router-dom'
 import { useState } from 'react'
+import { useAuth } from '../../context/AuthContext' // ¡IMPORTANTE: Añadir!
 import './Register.css'
 
 function Register() {
   const navigate = useNavigate()
+  const { register } = useAuth() // Usar la función de registro real
   const [step, setStep] = useState(1) // Para formulario multi-paso
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
@@ -70,7 +72,7 @@ function Register() {
         setError('Por favor completa todos los campos profesionales')
         return false
       }
-      if (!formData.hourlyRate || formData.hourlyRate <= 0) {
+      if (!formData.hourlyRate || parseFloat(formData.hourlyRate) <= 0) {
         setError('Por favor ingresa una tarifa válida')
         return false
       }
@@ -102,18 +104,41 @@ function Register() {
     setError('')
 
     try {
-      // Aquí harías la llamada a tu API
-      console.log('Datos de registro:', formData)
+      // LLAMADA REAL A LA API
+      const { 
+        firstName, 
+        lastName, 
+        email, 
+        phone, 
+        password, 
+        accountType, 
+        profession, 
+        experience, 
+        description, 
+        hourlyRate 
+      } = formData;
+
+      await register({
+        firstName, 
+        lastName, 
+        email, 
+        phone, 
+        password,
+        accountType,
+        profession,
+        experience,
+        description,
+        hourlyRate: parseFloat(hourlyRate) || 0
+      })
       
-      // Simulación de registro
-      await new Promise(resolve => setTimeout(resolve, 1500))
-      
-      // Redirigir al dashboard o login
+      // Redirigir al login con un mensaje de éxito
       navigate('/login', { 
         state: { message: '¡Registro exitoso! Por favor inicia sesión.' }
       })
     } catch (err) {
-      setError(err.message || 'Error al registrar. Intenta nuevamente.')
+      // Manejo de errores de la API
+      const errorMessage = err.message || err.data?.message || 'Error al registrar. Intenta nuevamente.'
+      setError(errorMessage)
     } finally {
       setLoading(false)
     }
@@ -244,6 +269,7 @@ function Register() {
                         variant="primary" 
                         className="w-100"
                         onClick={handleNextStep}
+                        disabled={loading}
                       >
                         Siguiente
                       </Button>
@@ -294,14 +320,13 @@ function Register() {
                               required
                             >
                               <option value="">Selecciona tu profesión</option>
-                              <option value="fontaneria">Fontanería</option>
-                              <option value="electricidad">Electricidad</option>
-                              <option value="limpieza">Limpieza</option>
-                              <option value="construccion">Construcción</option>
-                              <option value="sastreria">Sastrería</option>
-                              <option value="zapateria">Zapatería</option>
-                              <option value="clases">Clases Particulares</option>
-                              <option value="otro">Otro</option>
+                              <option value="Fontanería">Fontanería</option>
+                              <option value="Electricidad">Electricidad</option>
+                              <option value="Limpieza">Limpieza</option>
+                              <option value="Carpintería">Carpintería</option>
+                              <option value="Pintura">Pintura</option>
+                              <option value="Mecánica">Mecánica</option>
+                              <option value="Otro">Otro</option>
                             </Form.Select>
                           </Form.Group>
 
@@ -387,7 +412,7 @@ function Register() {
                           className="w-50"
                           disabled={loading}
                         >
-                          {loading ? 'Registrando...' : 'Crear Cuenta'}
+                          {loading ? <><Spinner animation="border" size="sm" className="me-2" />Registrando...</> : 'Crear Cuenta'}
                         </Button>
                       </div>
                     </>

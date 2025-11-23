@@ -70,4 +70,13 @@ export const contactAPI = {
     getStats: () => api.get('/contacts/stats')
 };
 
+// Services (NUEVO - REQUERIDO POR ServiceForm.jsx)
+export const serviceAPI = {
+    create: (data) => api.post('/services', data),
+    getMyServices: () => api.get('/services/my-services'),
+    update: (id, data) => api.put(`/services/${id}`, data),
+    delete: (id) => api.delete(`/services/${id}`),
+    getByCategory: (id) => api.get(`/services/category/${id}`)
+};
+
 export default api;

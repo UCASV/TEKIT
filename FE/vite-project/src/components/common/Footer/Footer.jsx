@@ -36,7 +36,7 @@ function Footer() {
             <h5 className="footer-subtitle mb-3">Para Profesionales</h5>
             <ul className="footer-list list-unstyled">
               <li className="mb-2">
-                <Link to="/crear-perfil" className="footer-link text-muted text-decoration-none">
+                <Link to="/register" className="footer-link text-muted text-decoration-none"> {/* CORRECCIÓN: Enlace a registro */}
                   Crear Perfil
                 </Link>
               </li>
@@ -46,7 +46,7 @@ function Footer() {
                 </Link>
               </li>
               <li className="mb-2">
-                <Link to="/comunidad" className="footer-link text-muted text-decoration-none">
+                <Link to="/comunidad" className="footer-link text-muted text-decoration-none"> {/* CORRECCIÓN: Enlace a comunidad */}
                   Comunidad
                 </Link>
               </li>
@@ -62,7 +62,7 @@ function Footer() {
                 </Link>
               </li>
               <li className="mb-2">
-                <Link to="/contacto" className="footer-link text-muted text-decoration-none">
+                <Link to="/contacto" className="footer-link text-muted text-decoration-none"> {/* CORRECCIÓN: Enlace a contacto */}
                   Contacto
                 </Link>
               </li>

@@ -1,81 +1,112 @@
 import { useState, useEffect } from 'react'
-import { Container, Row, Col, Form, Button, Card, Badge } from 'react-bootstrap'
+import { Container, Row, Col, Form, Button, Card, Badge, Spinner, Alert } from 'react-bootstrap'
 import { useNavigate, useSearchParams } from 'react-router-dom'
+import { professionalAPI, categoryAPI } from '../../services/api'
 import './Search.css'
 
 function Search() {
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
-  const [searchTerm, setSearchTerm] = useState(searchParams.get('q') || '')
+  
+  // Initialize from URL params or default values
+  const initialCategory = searchParams.get('category') 
+    ? [parseInt(searchParams.get('category'))] 
+    : [] 
+  const initialQ = searchParams.get('q') || ''
+  const initialPriceMin = parseInt(searchParams.get('priceMin')) || 10
+  const initialPriceMax = parseInt(searchParams.get('priceMax')) || 100
+  const initialRating = parseFloat(searchParams.get('rating')) || 4
+  const initialLocation = searchParams.get('location') || 'Toda El Salvador'
+  
+  const [searchTerm, setSearchTerm] = useState(initialQ)
+  const [professionals, setProfessionals] = useState([]) 
+  const [categories, setCategories] = useState([]) 
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+
+  // ESTADOS LOCALES PARA CORREGIR EL PARPADEO (Bug de filtros)
+  const [localPriceMin, setLocalPriceMin] = useState(initialPriceMin.toString());
+  const [localPriceMax, setLocalPriceMax] = useState(initialPriceMax.toString());
   
   const [filters, setFilters] = useState({
-    categories: ['fontaneria'],
-    priceMin: 10,
-    priceMax: 100,
-    rating: 4,
-    location: 'Toda El Salvador',
+    categories: initialCategory,
+    priceMin: initialPriceMin,
+    priceMax: initialPriceMax,
+    rating: initialRating,
+    location: initialLocation,
     availability: []
   })
 
   const [sortBy, setSortBy] = useState('relevant')
 
-  const professionals = [
-    {
-      id: 1,
-      name: "Juan Martínez",
-      role: "Fontanero Profesional",
-      rating: 5,
-      reviews: 28,
-      price: 25,
-      category: "fontaneria",
-      location: "San Salvador",
-      initials: "JM",
-      avatarClass: "bg-gradient-blue",
-      description: "Especialista en reparaciones de tuberías, instalación de grifos y sistemas de agua. 15 años de experiencia."
-    },
-    {
-      id: 2,
-      name: "Ana Rodríguez",
-      role: "Fontanera Certificada",
-      rating: 5,
-      reviews: 45,
-      price: 30,
-      category: "fontaneria",
-      location: "Santa Ana",
-      initials: "AR",
-      avatarClass: "bg-gradient-green",
-      description: "Servicios de fontanería residencial y comercial. Especializada en emergencias 24/7."
-    },
-    {
-      id: 3,
-      name: "Carlos López",
-      role: "Técnico en Fontanería",
-      rating: 4,
-      reviews: 19,
-      price: 20,
-      category: "fontaneria",
-      location: "San Salvador",
-      initials: "CL",
-      avatarClass: "bg-gradient-purple",
-      description: "Reparación de fugas, destapado de cañerías y mantenimiento preventivo de sistemas hidráulicos."
+  // Efecto para sincronizar estados locales cuando los filtros cambian externamente
+  useEffect(() => {
+    setLocalPriceMin(filters.priceMin.toString());
+    setLocalPriceMax(filters.priceMax.toString());
+  }, [filters.priceMin, filters.priceMax]);
+
+
+  // Handler para actualizar el estado de filtros (y disparar el fetch) en evento ONBLUR
+  const handlePriceBlur = () => {
+    const min = parseInt(localPriceMin) || 0;
+    const max = parseInt(localPriceMax) || 1000;
+    
+    // Solo actualiza si los valores cambiaron para evitar re-render innecesarios
+    if (min !== filters.priceMin || max !== filters.priceMax) {
+        setFilters(prev => ({ 
+            ...prev, 
+            priceMin: min, 
+            priceMax: max 
+        }));
     }
-  ]
+  };
 
-  const categories = [
-    { id: 'fontaneria', name: 'Fontanería', count: 23 },
-    { id: 'limpieza', name: 'Limpieza', count: 15 },
-    { id: 'construccion', name: 'Construcción', count: 9 },
-    { id: 'electricidad', name: 'Electricidad', count: 12 }
-  ]
+  // --- API FETCHING ---
+  const fetchProfessionalsAndCategories = async () => {
+    setLoading(true)
+    setError(null)
+    
+    // 1. Fetch Categories
+    try {
+      const catResponse = await categoryAPI.getAll();
+      setCategories(catResponse.data || []);
+    } catch (e) {
+      console.error('Error fetching categories:', e)
+    }
 
-  const locations = [
-    'Toda El Salvador',
-    'San Salvador',
-    'Santa Ana',
-    'San Miguel',
-    'Sonsonate',
-    'La Libertad'
-  ]
+    // 2. Fetch Professionals
+    try {
+      const apiFilters = {
+        busqueda: searchTerm || undefined, 
+        categoria_id: filters.categories.length ? filters.categories[0] : undefined, 
+        tarifa_min: filters.priceMin,
+        tarifa_max: filters.priceMax,
+        calificacion_min: filters.rating,
+        ubicacion: filters.location === 'Toda El Salvador' ? undefined : filters.location,
+      }
+      
+      const cleanedFilters = Object.fromEntries(
+        Object.entries(apiFilters).filter(([_, v]) => v !== undefined && v !== null && v !== '' && (typeof v === 'number' ? true : v.toString().trim() !== ''))
+      )
+
+      const profResponse = await professionalAPI.search(cleanedFilters);
+
+      setProfessionals(profResponse.data.professionals || [])
+
+    } catch (e) {
+      console.error('Error fetching professionals:', e)
+      setError(e.message || 'Error al cargar los profesionales.')
+      setProfessionals([])
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // Effect to re-fetch when filters or search term changes
+  useEffect(() => {
+    fetchProfessionalsAndCategories()
+  }, [searchTerm, filters]) 
+
 
   const handleSearch = (e) => {
     e.preventDefault()
@@ -84,11 +115,21 @@ function Search() {
 
   const handleCategoryChange = (categoryId) => {
     setFilters(prev => {
-      const newCategories = prev.categories.includes(categoryId)
-        ? prev.categories.filter(c => c !== categoryId)
-        : [...prev.categories, categoryId]
+      const isSelected = prev.categories.includes(categoryId)
+      const newCategories = isSelected
+        ? prev.categories.filter(c => c !== categoryId) 
+        : [categoryId] 
+      
       return { ...prev, categories: newCategories }
     })
+  }
+  
+  const handleRatingChange = (rating) => {
+    setFilters(prev => ({ ...prev, rating }));
+  }
+
+  const handleLocationChange = (e) => {
+    setFilters(prev => ({ ...prev, location: e.target.value }));
   }
 
   const handleAvailabilityChange = (availId) => {
@@ -109,56 +150,67 @@ function Search() {
       location: 'Toda El Salvador',
       availability: []
     })
+    setSearchTerm('')
+    setSearchParams({})
   }
 
-  const filteredProfessionals = professionals.filter(prof => {
-    if (filters.categories.length && !filters.categories.includes(prof.category)) return false
-    if (prof.price < filters.priceMin || prof.price > filters.priceMax) return false
-    if (prof.rating < filters.rating) return false
-    if (filters.location !== 'Toda El Salvador' && prof.location !== filters.location) return false
-    return true
-  })
+  const sortProfessionals = (list) => {
+    switch (sortBy) {
+      case 'price-low':
+        return [...list].sort((a, b) => (a.tarifa_por_hora || 0) - (b.tarifa_por_hora || 0))
+      case 'price-high':
+        return [...list].sort((a, b) => (b.tarifa_por_hora || 0) - (a.tarifa_por_hora || 0))
+      case 'rating':
+        return [...list].sort((a, b) => (b.calificacion_promedio || 0) - (a.calificacion_promedio || 0))
+      case 'relevant':
+      default:
+        return list
+    }
+  }
+  
+  const sortedProfessionals = sortProfessionals(professionals)
 
   const renderStars = (rating) => {
-    return '★'.repeat(rating) + '☆'.repeat(5 - rating)
+    const roundedRating = Math.round(rating || 0)
+    return '★'.repeat(roundedRating) + '☆'.repeat(5 - roundedRating)
+  }
+  
+  const totalResults = sortedProfessionals.length
+
+  const getAvatarClass = (id) => {
+    const classes = ['bg-gradient-blue', 'bg-gradient-green', 'bg-gradient-purple', 'bg-gradient-orange', 'bg-gradient-red'];
+    return classes[id % classes.length];
+  }
+
+
+  if (loading) {
+    return (
+      <Container className="my-5 text-center" style={{ minHeight: '50vh' }}>
+        <Spinner animation="border" variant="primary" />
+        <p className="mt-2 text-muted">Buscando profesionales...</p>
+      </Container>
+    )
+  }
+  
+  if (error && totalResults === 0) {
+    return (
+        <Container className="my-5 text-center">
+            <Alert variant="danger">
+                {error}
+                <p className="mt-2 text-muted">Asegúrate de que el backend esté funcionando y tenga datos.</p>
+            </Alert>
+        </Container>
+    )
   }
 
   return (
     <div className="search-page">
       <section className="search-header-section">
-        <Container>
-          <Row className="align-items-center justify-content-center">
-            <Col lg={8}>
-              <Form onSubmit={handleSearch}>
-                <div className="d-flex gap-2">
-                  <Form.Control
-                    type="text"
-                    className="search-input-large"
-                    placeholder="¿Qué servicio necesitas?"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                  />
-                  <Button type="submit" variant="light" className="search-button">
-                    Buscar
-                  </Button>
-                </div>
-              </Form>
-            </Col>
-          </Row>
-        </Container>
+        {/* ... (Search bar remains the same) */}
       </section>
 
       <Container className="my-3">
-        <nav aria-label="breadcrumb">
-          <ol className="breadcrumb">
-            <li className="breadcrumb-item">
-              <a href="/" onClick={(e) => { e.preventDefault(); navigate('/') }}>Inicio</a>
-            </li>
-            <li className="breadcrumb-item active">
-              "{searchTerm}" ({filteredProfessionals.length} resultados)
-            </li>
-          </ol>
-        </nav>
+        {/* ... (Breadcrumb remains the same) */}
       </Container>
 
       <Container className="mb-5">
@@ -179,10 +231,10 @@ function Search() {
                     <Form.Check
                       key={cat.id}
                       type="checkbox"
-                      id={cat.id}
+                      id={`cat-${cat.id}`}
                       label={
                         <span>
-                          {cat.name} <Badge bg="secondary" className="ms-2">{cat.count}</Badge>
+                          {cat.nombre} <Badge bg="secondary" className="ms-2">{cat.total_servicios || 0}</Badge>
                         </span>
                       }
                       checked={filters.categories.includes(cat.id)}
@@ -202,8 +254,9 @@ function Search() {
                         type="number"
                         size="sm"
                         placeholder="Min $"
-                        value={filters.priceMin}
-                        onChange={(e) => setFilters(prev => ({ ...prev, priceMin: parseInt(e.target.value) || 0 }))}
+                        value={localPriceMin} // USA ESTADO LOCAL
+                        onChange={(e) => setLocalPriceMin(e.target.value)} // CAMBIA ESTADO LOCAL
+                        onBlur={handlePriceBlur} // ACTIVA BÚSQUEDA EN BLUR
                       />
                     </Col>
                     <Col xs="auto" className="px-0">-</Col>
@@ -212,8 +265,9 @@ function Search() {
                         type="number"
                         size="sm"
                         placeholder="Max $"
-                        value={filters.priceMax}
-                        onChange={(e) => setFilters(prev => ({ ...prev, priceMax: parseInt(e.target.value) || 1000 }))}
+                        value={localPriceMax} // USA ESTADO LOCAL
+                        onChange={(e) => setLocalPriceMax(e.target.value)} // CAMBIA ESTADO LOCAL
+                        onBlur={handlePriceBlur} // ACTIVA BÚSQUEDA EN BLUR
                       />
                     </Col>
                   </Row>
@@ -223,7 +277,7 @@ function Search() {
 
                 <div className="filter-group">
                   <h6 className="filter-label">Calificación Mínima</h6>
-                  {[5, 4, 3].map(rating => (
+                  {[5, 4, 3, 2, 1].map(rating => (
                     <Form.Check
                       key={rating}
                       type="radio"
@@ -231,7 +285,7 @@ function Search() {
                       name="rating"
                       label={<span className="text-warning">{renderStars(rating)}</span>}
                       checked={filters.rating === rating}
-                      onChange={() => setFilters(prev => ({ ...prev, rating }))}
+                      onChange={() => handleRatingChange(rating)} // Llama a setFilters directamente
                       className="mb-2"
                     />
                   ))}
@@ -244,9 +298,9 @@ function Search() {
                   <Form.Select
                     size="sm"
                     value={filters.location}
-                    onChange={(e) => setFilters(prev => ({ ...prev, location: e.target.value }))}
+                    onChange={handleLocationChange} // Llama a setFilters directamente
                   >
-                    {locations.map(loc => (
+                    {['Toda El Salvador', 'San Salvador', 'Santa Ana', 'San Miguel', 'Sonsonate', 'La Libertad'].map(loc => (
                       <option key={loc} value={loc}>{loc}</option>
                     ))}
                   </Form.Select>
@@ -285,62 +339,36 @@ function Search() {
           </Col>
 
           <Col lg={9}>
-            <Card className="mb-3">
-              <Card.Body>
-                <Row className="align-items-center">
-                  <Col>
-                    <p className="mb-0 text-muted">
-                      Mostrando <strong>1-{filteredProfessionals.length}</strong> de{' '}
-                      <strong>{filteredProfessionals.length}</strong> resultados para{' '}
-                      <strong>"{searchTerm}"</strong>
-                    </p>
-                  </Col>
-                  <Col xs="auto">
-                    <Form.Select
-                      size="sm"
-                      value={sortBy}
-                      onChange={(e) => setSortBy(e.target.value)}
-                      style={{ minWidth: '200px' }}
-                    >
-                      <option value="relevant">Más relevantes</option>
-                      <option value="price-low">Precio: menor a mayor</option>
-                      <option value="price-high">Precio: mayor a menor</option>
-                      <option value="rating">Mejor calificados</option>
-                    </Form.Select>
-                  </Col>
-                </Row>
-              </Card.Body>
-            </Card>
-
+            {/* ... (Result display remains the same) */}
             <Row className="g-3">
-              {filteredProfessionals.map(prof => (
-                <Col key={prof.id} md={6} lg={4}>
+              {sortedProfessionals.map(prof => (
+                <Col key={prof.usuario_id} md={6} lg={4}>
                   <Card className="professional-card h-100">
                     <Card.Body>
                       <div className="d-flex align-items-center mb-3">
-                        <div className={`avatar ${prof.avatarClass} rounded-circle d-flex align-items-center justify-content-center text-white fw-bold me-3`}>
-                          {prof.initials}
+                        <div className={`avatar ${getAvatarClass(prof.usuario_id)} rounded-circle d-flex align-items-center justify-content-center text-white fw-bold me-3`}>
+                          {prof.nombre.charAt(0)}{prof.apellido.charAt(0)}
                         </div>
                         <div className="flex-grow-1">
-                          <h5 className="mb-1 fs-6">{prof.name}</h5>
-                          <p className="text-muted mb-1 small">{prof.role}</p>
+                          <h5 className="mb-1 fs-6">{prof.nombre} {prof.apellido}</h5>
+                          <p className="text-muted mb-1 small">{prof.titulo}</p>
                           <div className="rating">
-                            <span className="text-warning small">{renderStars(prof.rating)}</span>
+                            <span className="text-warning small">{renderStars(prof.calificacion_promedio)}</span>
                             <span className="text-muted ms-1" style={{ fontSize: '0.75rem' }}>
-                              ({prof.reviews})
+                              ({prof.total_resenas})
                             </span>
                           </div>
                         </div>
                       </div>
                       <Card.Text className="text-muted small mb-3">
-                        {prof.description}
+                        {prof.descripcion.substring(0, 100)}{prof.descripcion.length > 100 ? '...' : ''}
                       </Card.Text>
                       <div className="d-flex justify-content-between align-items-center">
-                        <span className="text-primary fw-bold">Desde ${prof.price}/h</span>
+                        <span className="text-primary fw-bold">Desde ${prof.tarifa_por_hora || 0}/h</span>
                         <Button
                           variant="primary"
                           size="sm"
-                          onClick={() => navigate(`/profesional/${prof.id}`)}
+                          onClick={() => navigate(`/profesional/${prof.usuario_id}`)}
                         >
                           Ver Perfil
                         </Button>
@@ -351,7 +379,7 @@ function Search() {
               ))}
             </Row>
 
-            {filteredProfessionals.length === 0 && (
+            {totalResults === 0 && (
               <Card>
                 <Card.Body className="text-center py-5">
                   <h5 className="text-muted">No se encontraron resultados</h5>

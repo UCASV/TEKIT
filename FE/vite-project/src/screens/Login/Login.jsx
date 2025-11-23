@@ -33,7 +33,8 @@ function Login() {
       await login(formData)
       navigate('/dashboard')
     } catch (err) {
-      setError(err.message || 'Error al iniciar sesión. Verifica tus credenciales.')
+      const errorMessage = err.message || err.data?.message || 'Error al iniciar sesión. Verifica tus credenciales.'
+      setError(errorMessage)
     } finally {
       setLoading(false)
     }
@@ -92,7 +93,7 @@ function Login() {
 
                   <div className="d-flex justify-content-between align-items-center mb-4">
                     <Form.Check type="checkbox" label="Recuérdame" />
-                    <Link to="/recuperar-password" className="text-decoration-none small">
+                    <Link to="/recuperar-password" className="text-decoration-none small"> {/* CORRECCIÓN: Enlace a RecuperarPassword */}
                       ¿Olvidaste tu contraseña?
                     </Link>
                   </div>

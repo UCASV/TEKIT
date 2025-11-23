@@ -1,133 +1,43 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { professionalAPI, reviewAPI, authAPI } from '../../services/api'; 
 import { Star, MapPin, Briefcase, Award, Clock, Mail, Phone, Calendar, Edit2, Save, X, Plus, Trash2, Camera } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
+import NotFound from '../NotFound/NotFound'; 
+import { Alert, Spinner, Button } from 'react-bootstrap'; 
 import './PerfilContratante.css';
 
-const PerfilContratante = () => {
+const PerfilContratante = ({ editingMode = false, profileUserId }) => { 
+  const { id } = useParams(); 
+  
+  const targetId = profileUserId || id;
+  const navigate = useNavigate();
+  const { user, updateProfile: updateAuthProfile } = useAuth();
+  
+  // ===============================================
+  // HOOKS (TODOS ARRIBA)
+  // ===============================================
   const [activeTab, setActiveTab] = useState('sobre-mi');
-  const [isEditing, setIsEditing] = useState(false);
+  const [isEditing, setIsEditing] = useState(editingMode);
+  
+  const [perfil, setPerfil] = useState(null); 
+  const [perfilTemp, setPerfilTemp] = useState(null);
+  const [reviews, setReviews] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const perfilInicial = {
-    nombre: "Ana Rodríguez",
-    titulo: "Fontanera Certificada",
-    ubicacion: "San Salvador, El Salvador",
-    foto: "https://api.dicebear.com/7.x/avataaars/svg?seed=Ana",
-    calificacion: 4.8,
-    resenas: 45,
-    verificado: true,
-    miembro_desde: "2022",
-    tarifa: "30",
-    email: "ana.rodriguez@email.com",
-    telefono: "+503 1234-5678",
-    sobre_mi: "Fontanera profesional con más de 10 años de experiencia en servicios residenciales y comerciales. Especializada en emergencias 24/7, instalaciones de grifería, reparación de tuberías y sistemas de agua. Comprometida con la calidad y la satisfacción del cliente.",
-    experiencia: [
-      {
-        puesto: "Fontanera Independiente",
-        periodo: "2020 - Presente",
-        descripcion: "Servicios de fontanería residencial y comercial. Especializada en emergencias, reparaciones e instalaciones."
-      },
-      {
-        puesto: "Técnica Senior - Instalaciones García",
-        periodo: "2015 - 2020",
-        descripcion: "Responsable de proyectos de instalación de sistemas de agua y calefacción en edificios comerciales."
-      },
-      {
-        puesto: "Aprendiz de Fontanería - Construcciones López",
-        periodo: "2013 - 2015",
-        descripcion: "Formación técnica en instalaciones sanitarias y sistemas de agua potable."
-      }
-    ],
-    habilidades: [
-      "Reparación de tuberías",
-      "Instalación de grifería",
-      "Sistemas de agua",
-      "Calefacción",
-      "Emergencias 24/7",
-      "Detección de fugas",
-      "Instalación de sanitarios",
-      "Desatascos"
-    ],
-    certificaciones: [
-      "Certificación Profesional en Fontanería",
-      "Licencia Sanitaria",
-      "Curso de Seguridad Laboral"
-    ],
-    proyectos: [
-      {
-        titulo: "Renovación Sistema de Agua - Edificio Comercial",
-        descripcion: "Instalación completa de sistema de agua potable en edificio de 5 plantas.",
-        fecha: "2024"
-      },
-      {
-        titulo: "Reparación de Emergencia - Hotel Plaza",
-        descripcion: "Solución urgente de fuga mayor en sistema principal de agua.",
-        fecha: "2024"
-      }
-    ],
-    resenas_lista: [
-      {
-        nombre: "Carlos Martínez",
-        fecha: "Hace 2 semanas",
-        calificacion: 5,
-        comentario: "Excelente profesional. Resolvió una emergencia de fontanería rápidamente y con muy buen precio. Muy recomendable."
-      },
-      {
-        nombre: "María González",
-        fecha: "Hace 1 mes",
-        calificacion: 5,
-        comentario: "Muy profesional y eficiente. Instaló toda la grifería de mi cocina nueva. Trabajo impecable."
-      },
-      {
-        nombre: "Juan Pérez",
-        fecha: "Hace 2 meses",
-        calificacion: 4,
-        comentario: "Buen servicio, llegó puntual y solucionó el problema. Precios justos."
-      }
-    ]
-  };
+  // Hooks para la lógica de edición de arrays
+  const [nuevaHabilidad, setNuevaHabilidad] = useState('');
+  const [nuevaCertificacion, setNuevaCertificacion] = useState('');
+  const [mostrarInputHabilidad, setMostrarInputHabilidad] = useState(false);
+  const [mostrarInputCertificacion, setMostrarInputCertificacion] = useState(false);
+  // ===============================================
 
-  const [perfil, setPerfil] = useState(perfilInicial);
-  const [perfilTemp, setPerfilTemp] = useState(perfilInicial);
+  const isMyProfile = user?.rol_id === 2 && user?.id === parseInt(targetId); 
 
-  const handleEdit = () => {
-    setPerfilTemp({...perfil});
-    setIsEditing(true);
-  };
-
-  const handleSave = () => {
-    if (!perfilTemp.nombre.trim()) {
-      alert('El nombre completo es obligatorio');
-      return;
-    }
-    if (!perfilTemp.titulo.trim()) {
-      alert('El título profesional es obligatorio');
-      return;
-    }
-    if (!perfilTemp.ubicacion.trim()) {
-      alert('La ubicación es obligatoria');
-      return;
-    }
-
-    const perfilLimpio = {
-      ...perfilTemp,
-      experiencia: perfilTemp.experiencia.filter(exp => 
-        exp.puesto.trim() && exp.periodo.trim() && exp.descripcion.trim()
-      ),
-      proyectos: perfilTemp.proyectos.filter(proj => 
-        proj.titulo.trim() && proj.descripcion.trim() && proj.fecha.trim()
-      ),
-      habilidades: perfilTemp.habilidades.filter(hab => hab.trim()),
-      certificaciones: perfilTemp.certificaciones.filter(cert => cert.trim())
-    };
-    setPerfil(perfilLimpio);
-    setPerfilTemp(perfilLimpio);
-    setIsEditing(false);
-  };
-
-  const handleCancel = () => {
-    setPerfilTemp({...perfil});
-    setIsEditing(false);
-  };
-
+  // ===============================================
+  // UTILIDADES Y HANDLERS (DEFINIDOS AQUÍ PARA EL SCOPE)
+  // ===============================================
   const updateField = (field, value) => {
     setPerfilTemp({ ...perfilTemp, [field]: value });
   };
@@ -139,7 +49,7 @@ const PerfilContratante = () => {
     }
   };
 
-  const handleImageUpload = (e) => {
+  const handleImageUpload = (e) => { // <--- FUNCIÓN CORREGIDA
     const file = e.target.files[0];
     if (file) {
       const reader = new FileReader();
@@ -151,34 +61,21 @@ const PerfilContratante = () => {
   };
 
   const addExperiencia = () => {
-    setPerfilTemp({
-      ...perfilTemp,
-      experiencia: [...perfilTemp.experiencia, { puesto: "", periodo: "", descripcion: "" }]
-    });
+    setPerfilTemp({ ...perfilTemp, experiencia: [...perfilTemp.experiencia, { puesto: "", periodo: "", descripcion: "" }] });
   };
-
   const updateExperiencia = (index, field, value) => {
     const newExp = [...perfilTemp.experiencia];
     newExp[index][field] = value;
     setPerfilTemp({ ...perfilTemp, experiencia: newExp });
   };
-
   const deleteExperiencia = (index) => {
     const newExp = perfilTemp.experiencia.filter((_, i) => i !== index);
     setPerfilTemp({ ...perfilTemp, experiencia: newExp });
   };
 
-  const [nuevaHabilidad, setNuevaHabilidad] = useState('');
-  const [nuevaCertificacion, setNuevaCertificacion] = useState('');
-  const [mostrarInputHabilidad, setMostrarInputHabilidad] = useState(false);
-  const [mostrarInputCertificacion, setMostrarInputCertificacion] = useState(false);
-
   const addHabilidad = () => {
-    if (nuevaHabilidad.trim()) {
-      setPerfilTemp({
-        ...perfilTemp,
-        habilidades: [...perfilTemp.habilidades, nuevaHabilidad.trim()]
-      });
+    if (nuevaHabilidad.trim() && !perfilTemp.habilidades.includes(nuevaHabilidad.trim())) {
+      setPerfilTemp({ ...perfilTemp, habilidades: [...perfilTemp.habilidades, nuevaHabilidad.trim()] });
       setNuevaHabilidad('');
       setMostrarInputHabilidad(false);
     }
@@ -191,10 +88,7 @@ const PerfilContratante = () => {
 
   const addCertificacion = () => {
     if (nuevaCertificacion.trim()) {
-      setPerfilTemp({
-        ...perfilTemp,
-        certificaciones: [...perfilTemp.certificaciones, nuevaCertificacion.trim()]
-      });
+      setPerfilTemp({ ...perfilTemp, certificaciones: [...perfilTemp.certificaciones, nuevaCertificacion.trim()] });
       setNuevaCertificacion('');
       setMostrarInputCertificacion(false);
     }
@@ -206,10 +100,7 @@ const PerfilContratante = () => {
   };
 
   const addProyecto = () => {
-    setPerfilTemp({
-      ...perfilTemp,
-      proyectos: [...perfilTemp.proyectos, { titulo: "", descripcion: "", fecha: "" }]
-    });
+    setPerfilTemp({ ...perfilTemp, proyectos: [...perfilTemp.proyectos, { titulo: "", descripcion: "", fecha: "" }] });
   };
 
   const updateProyecto = (index, field, value) => {
@@ -222,15 +113,174 @@ const PerfilContratante = () => {
     const newProj = perfilTemp.proyectos.filter((_, i) => i !== index);
     setPerfilTemp({ ...perfilTemp, proyectos: newProj });
   };
+  // ===============================================
+
+  useEffect(() => {
+    // Si se usa en modo edición, forzar la pestaña de detalles
+    if (editingMode) {
+        setActiveTab('sobre-mi');
+        setIsEditing(true);
+    }
+    
+    // Si no hay targetId, no hacer fetch (ej: error 404)
+    if (!targetId) {
+        setLoading(false);
+        setError('ID de perfil no especificado.');
+        return;
+    }
+
+    const fetchData = async () => {
+      try {
+        const [profResponse, reviewResponse] = await Promise.all([
+          professionalAPI.getById(targetId),
+          reviewAPI.getByProfessional(targetId)
+        ]);
+
+        const profileData = profResponse.data;
+        const reviewsData = reviewResponse.data.reviews || [];
+
+        // Mapear BE data
+        const mappedProfile = {
+            id: profileData.usuario_id,
+            perfil_id: profileData.perfil_id,
+            nombre: `${profileData.nombre} ${profileData.apellido}`,
+            titulo: profileData.titulo,
+            ubicacion: profileData.ubicacion,
+            foto: profileData.foto_perfil || `https://api.dicebear.com/7.x/initials/svg?seed=${profileData.nombre}+${profileData.apellido}`,
+            calificacion: profileData.calificacion_promedio,
+            resenas: profileData.total_resenas,
+            verificado: profileData.verificado,
+            miembro_desde: new Date(profileData.fecha_registro).getFullYear().toString(),
+            tarifa: profileData.tarifa_por_hora,
+            email: profileData.email,
+            telefono: profileData.telefono,
+            sobre_mi: profileData.descripcion,
+            experiencia: profileData.experiencias || [],
+            habilidades: (profileData.habilidades || []).map(h => h.nombre),
+            certificaciones: (profileData.certificaciones || []).map(c => c.nombre),
+            proyectos: profileData.proyectos || [],
+        };
+
+        setPerfil(mappedProfile);
+        setPerfilTemp(mappedProfile);
+        setReviews(reviewsData.map(r => ({
+            nombre: `${r.calificador_nombre} ${r.calificador_apellido}`,
+            fecha: new Date(r.createdAt).toLocaleDateString('es-ES'),
+            calificacion: r.calificacion,
+            comentario: r.comentario
+        })));
+        
+      } catch (err) {
+        console.error('Error fetching professional profile:', err);
+        if (err && err.message && err.message.includes('404')) {
+             setError('Perfil no encontrado');
+        } else {
+            setError(err.message || 'No se pudo cargar el perfil profesional.');
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, [targetId, user, editingMode]); 
+
+  // ... (Conditional returns for loading/error remain)
+  if (loading) {
+    return (
+        <div className="min-vh-100 d-flex align-items-center justify-content-center">
+            <Spinner animation="border" variant="primary" />
+            <span className="visually-hidden">Cargando perfil...</span>
+        </div>
+    );
+  }
+
+  if (error || !perfil) {
+    if (editingMode) {
+        return <Alert variant="warning">Aún no tienes un perfil público completo. Completa los campos para publicarlo.</Alert>;
+    }
+    return <NotFound />;
+  }
+
+  // Lógica de edición
+  const handleEdit = () => {
+    if (isMyProfile) {
+        setPerfilTemp({...perfil});
+        setIsEditing(true);
+    } else {
+        alert('Solo puedes editar tu propio perfil.');
+    }
+  };
+
+  const handleSave = async () => {
+    if (!perfilTemp.nombre.trim() || !perfilTemp.titulo.trim() || !perfilTemp.ubicacion.trim()) {
+      alert('Los campos Nombre, Título y Ubicación son obligatorios');
+      return;
+    }
+
+    // Preparar datos para API
+    const nombreCompleto = perfilTemp.nombre.trim();
+    const partesNombre = nombreCompleto.split(/\s+/);
+    const firstName = partesNombre[0];
+    const lastName = partesNombre.length > 1 ? partesNombre.slice(1).join(' ') : '';
+    
+    const profileUpdates = {
+        titulo: perfilTemp.titulo,
+        descripcion: perfilTemp.sobre_mi,
+        ubicacion: perfilTemp.ubicacion,
+        tarifa_por_hora: parseFloat(perfilTemp.tarifa) || 0,
+    };
+    
+    const userUpdates = {
+        nombre: firstName,
+        apellido: lastName,
+        telefono: perfilTemp.telefono,
+        foto_perfil: perfilTemp.foto 
+    };
+
+    try {
+        await professionalAPI.updateProfile(profileUpdates); 
+        await authAPI.updateProfile(userUpdates); 
+        await updateAuthProfile(); 
+
+        const updatedPerfil = { ...perfilTemp, nombre: nombreCompleto };
+        setPerfil(updatedPerfil);
+        setPerfilTemp(updatedPerfil);
+        setIsEditing(false);
+
+    } catch (apiError) {
+        alert(`Error al guardar: ${apiError.message || apiError.data?.message || 'Error desconocido'}`);
+    }
+  };
+
+  const handleCancel = () => {
+    setPerfilTemp({...perfil});
+    setIsEditing(false);
+  };
+  
+  const handleContact = () => {
+    if (!user) {
+        navigate('/login', { state: { message: 'Inicia sesión para contactar a este profesional.' } });
+        return;
+    }
+    
+    const whatsappNumber = perfil.telefono ? perfil.telefono.replace(/\s|-/g, '') : '';
+    if (whatsappNumber) {
+        const whatsappUrl = `https://wa.me/${whatsappNumber}?text=Hola, estoy interesado en tus servicios de ${perfil.titulo} en TEKIT.`;
+        window.open(whatsappUrl, '_blank');
+    } else {
+        alert('Este profesional no tiene un número de teléfono de contacto registrado.');
+    }
+  };
 
   const renderStars = (rating) => {
+    const roundedRating = Math.round(rating || 0)
     return (
       <div className="d-flex align-items-center gap-1">
         {[...Array(5)].map((_, i) => (
           <Star
             key={i}
             className={`star-icon ${
-              i < Math.floor(rating)
+              i < roundedRating
                 ? 'star-filled'
                 : 'star-empty'
             }`}
@@ -261,7 +311,7 @@ const PerfilContratante = () => {
                     <input
                       type="file"
                       accept="image/*"
-                      onChange={handleImageUpload}
+                      onChange={handleImageUpload} 
                       className="file-input-hidden"
                     />
                   </label>
@@ -317,8 +367,8 @@ const PerfilContratante = () => {
                       </div>
                       <div className="rating-container">
                         {renderStars(currentPerfil.calificacion)}
-                        <span className="rating-number">{currentPerfil.calificacion}</span>
-                        <span className="rating-reviews">({currentPerfil.resenas} reseñas)</span>
+                        <span className="rating-number">{currentPerfil.calificacion ? currentPerfil.calificacion.toFixed(1) : '0.0'}</span>
+                        <span className="rating-reviews">({currentPerfil.resenas || 0} reseñas)</span>
                       </div>
                     </>
                   )}
@@ -337,36 +387,40 @@ const PerfilContratante = () => {
                           placeholder="0.00"
                         />
                       </div>
-                      <button
+                      <Button
                         onClick={handleSave}
                         className="btn btn-save"
                       >
                         <Save className="btn-icon" />
                         Guardar
-                      </button>
-                      <button
+                      </Button>
+                      <Button
                         onClick={handleCancel}
                         className="btn btn-cancel"
                       >
                         <X className="btn-icon" />
                         Cancelar
-                      </button>
+                      </Button>
                     </div>
                   ) : (
                     <>
                       <div className="tarifa-display">
-                        Desde ${currentPerfil.tarifa}
+                        Desde ${currentPerfil.tarifa || '0.00'}
                       </div>
-                      <button
-                        onClick={handleEdit}
-                        className="btn btn-edit"
-                      >
-                        <Edit2 className="btn-icon" />
-                        Editar Perfil
-                      </button>
-                      <button className="btn btn-contact">
-                        Contactar
-                      </button>
+                      
+                      {isMyProfile ? (
+                        /* Lógica: Si es MI perfil, muestro el indicador */
+                        <Alert variant="info" className="py-2 px-3 text-center" style={{ fontSize: '0.9rem' }}>
+                            Este es tu perfil público.
+                        </Alert>
+                      ) : (
+                        /* Lógica: Si NO es mi perfil, muestro Contactar */
+                        <>
+                            <Button className="btn btn-contact" onClick={handleContact}>
+                                Contactar
+                            </Button>
+                        </>
+                      )}
                     </>
                   )}
                 </div>
@@ -414,6 +468,9 @@ const PerfilContratante = () => {
                 ) : (
                   <p className="card-text">{currentPerfil.sobre_mi}</p>
                 )}
+                {currentPerfil.sobre_mi.length === 0 && !isEditing && (
+                    <p className="text-muted fst-italic">Este profesional aún no ha escrito una descripción.</p>
+                )}
               </div>
             )}
 
@@ -422,17 +479,17 @@ const PerfilContratante = () => {
                 <div className="card-header">
                   <h2 className="card-title">Experiencia Laboral</h2>
                   {isEditing && (
-                    <button
+                    <Button
                       onClick={addExperiencia}
                       className="btn-add"
                     >
                       <Plus className="btn-icon-small" />
                       Agregar
-                    </button>
+                    </Button>
                   )}
                 </div>
                 <div className="experiencia-list">
-                  {currentPerfil.experiencia.map((exp, index) => (
+                  {currentPerfil.experiencia.length > 0 ? currentPerfil.experiencia.map((exp, index) => (
                     <div key={index} className="experiencia-item">
                       <div className="experiencia-icon">
                         <Briefcase className="icon" />
@@ -448,12 +505,12 @@ const PerfilContratante = () => {
                                 className="input-field"
                                 placeholder="Puesto"
                               />
-                              <button
+                              <Button
                                 onClick={() => deleteExperiencia(index)}
                                 className="btn-delete"
                               >
                                 <Trash2 className="icon-delete" />
-                              </button>
+                              </Button>
                             </div>
                             <input
                               type="text"
@@ -481,7 +538,9 @@ const PerfilContratante = () => {
                         )}
                       </div>
                     </div>
-                  ))}
+                  )) : (
+                    <p className="text-muted fst-italic text-center">Sin experiencia registrada.</p>
+                  )}
                 </div>
               </div>
             )}
@@ -491,13 +550,13 @@ const PerfilContratante = () => {
                 <div className="card-header">
                   <h2 className="card-title">Habilidades</h2>
                   {isEditing && (
-                    <button
+                    <Button
                       onClick={() => setMostrarInputHabilidad(!mostrarInputHabilidad)}
                       className="btn-add"
                     >
                       <Plus className="btn-icon-small" />
                       Agregar
-                    </button>
+                    </Button>
                   )}
                 </div>
 
@@ -512,13 +571,13 @@ const PerfilContratante = () => {
                       placeholder="Escribe una habilidad..."
                       autoFocus
                     />
-                    <button
+                    <Button
                       onClick={addHabilidad}
                       className="btn-confirm"
                     >
                       <Plus className="btn-icon-small" />
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                       onClick={() => {
                         setMostrarInputHabilidad(false);
                         setNuevaHabilidad('');
@@ -526,12 +585,12 @@ const PerfilContratante = () => {
                       className="btn-cancel-add"
                     >
                       <X className="btn-icon-small" />
-                    </button>
+                    </Button>
                   </div>
                 )}
 
                 <div className="habilidades-grid">
-                  {currentPerfil.habilidades.map((habilidad, index) => (
+                  {currentPerfil.habilidades.length > 0 ? currentPerfil.habilidades.map((habilidad, index) => (
                     <span
                       key={index}
                       className="habilidad-tag"
@@ -546,20 +605,22 @@ const PerfilContratante = () => {
                         </button>
                       )}
                     </span>
-                  ))}
+                  )) : (
+                    <p className="text-muted fst-italic w-100 text-center">Sin habilidades registradas.</p>
+                  )}
                 </div>
 
                 <div className="certificaciones-section">
                   <div className="card-header">
                     <h3 className="section-subtitle">Certificaciones</h3>
                     {isEditing && (
-                      <button
+                      <Button
                         onClick={() => setMostrarInputCertificacion(!mostrarInputCertificacion)}
                         className="btn-add"
                       >
                         <Plus className="btn-icon-small" />
                         Agregar
-                      </button>
+                      </Button>
                     )}
                   </div>
 
@@ -574,13 +635,13 @@ const PerfilContratante = () => {
                         placeholder="Escribe una certificación..."
                         autoFocus
                       />
-                      <button
+                      <Button
                         onClick={addCertificacion}
                         className="btn-confirm"
                       >
                         <Plus className="btn-icon-small" />
-                      </button>
-                      <button
+                      </Button>
+                      <Button
                         onClick={() => {
                           setMostrarInputCertificacion(false);
                           setNuevaCertificacion('');
@@ -588,27 +649,29 @@ const PerfilContratante = () => {
                         className="btn-cancel-add"
                       >
                         <X className="btn-icon-small" />
-                      </button>
+                      </Button>
                     </div>
                   )}
 
                   <ul className="certificaciones-list">
-                    {currentPerfil.certificaciones.map((cert, index) => (
+                    {currentPerfil.certificaciones.length > 0 ? currentPerfil.certificaciones.map((cert, index) => (
                       <li key={index} className="certificacion-item">
                         <div className="certificacion-content">
                           <Award className="certificacion-icon" />
                           {cert}
                         </div>
                         {isEditing && (
-                          <button
+                          <Button
                             onClick={() => deleteCertificacion(index)}
                             className="btn-delete-cert"
                           >
                             <Trash2 className="icon-delete" />
-                          </button>
+                          </Button>
                         )}
                       </li>
-                    ))}
+                    )) : (
+                        <p className="text-muted fst-italic">Sin certificaciones registradas.</p>
+                    )}
                   </ul>
                 </div>
               </div>
@@ -619,17 +682,17 @@ const PerfilContratante = () => {
                 <div className="card-header">
                   <h2 className="card-title">Proyectos Destacados</h2>
                   {isEditing && (
-                    <button
+                    <Button
                       onClick={addProyecto}
                       className="btn-add"
                     >
                       <Plus className="btn-icon-small" />
                       Agregar
-                    </button>
+                    </Button>
                   )}
                 </div>
                 <div className="proyectos-list">
-                  {currentPerfil.proyectos.map((proyecto, index) => (
+                  {currentPerfil.proyectos.length > 0 ? currentPerfil.proyectos.map((proyecto, index) => (
                     <div key={index} className="proyecto-card">
                       {isEditing ? (
                         <div className="edit-proyecto">
@@ -648,12 +711,12 @@ const PerfilContratante = () => {
                               className="input-proyecto-fecha"
                               placeholder="Año"
                             />
-                            <button
+                            <Button
                               onClick={() => deleteProyecto(index)}
                               className="btn-delete"
                             >
                               <Trash2 className="icon-delete" />
-                            </button>
+                            </Button>
                           </div>
                           <textarea
                             value={proyecto.descripcion}
@@ -672,7 +735,9 @@ const PerfilContratante = () => {
                         </>
                       )}
                     </div>
-                  ))}
+                  )) : (
+                    <p className="text-muted fst-italic text-center">Sin proyectos destacados.</p>
+                  )}
                 </div>
               </div>
             )}
@@ -680,13 +745,13 @@ const PerfilContratante = () => {
             {activeTab === 'resenas' && (
               <div className="card">
                 <h2 className="card-title">
-                  Reseñas ({currentPerfil.resenas})
+                  Reseñas ({reviews.length})
                 </h2>
                 <div className="resenas-list">
-                  {currentPerfil.resenas_lista.map((resena, index) => (
+                  {reviews.length > 0 ? reviews.map((resena, index) => (
                     <div key={index} className="resena-item">
                       <div className="resena-content">
-                        <div className="resena-avatar">
+                        <div className="resena-avatar" style={{ background: 'linear-gradient(135deg, #351491 0%, #101728 100%)' }}>
                           {resena.nombre.charAt(0)}
                         </div>
                         <div className="resena-info">
@@ -701,7 +766,9 @@ const PerfilContratante = () => {
                         </div>
                       </div>
                     </div>
-                  ))}
+                  )) : (
+                    <p className="text-muted fst-italic text-center">Aún no hay reseñas para este profesional.</p>
+                  )}
                 </div>
               </div>
             )}
@@ -723,6 +790,7 @@ const PerfilContratante = () => {
                       onChange={(e) => updateField('email', e.target.value)}
                       className="input-contacto"
                       placeholder="Email"
+                      disabled 
                     />
                   </div>
                   <div className="contacto-field">
@@ -760,10 +828,15 @@ const PerfilContratante = () => {
                 <span>Disponible para nuevos proyectos</span>
               </div>
 
-              {!isEditing && (
-                <button className="btn-mensaje">
+              {!isEditing && !isMyProfile && (
+                <Button className="btn-mensaje" onClick={handleContact}>
                   Enviar Mensaje
-                </button>
+                </Button>
+              )}
+               {!isEditing && isMyProfile && (
+                <Alert variant="info" className="mt-3 text-center">
+                    Gestiona tus datos en la pestaña "Mi Cuenta".
+                </Alert>
               )}
             </div>
           </div>
