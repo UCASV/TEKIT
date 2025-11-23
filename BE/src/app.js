@@ -1,4 +1,6 @@
-
+// =============================================
+// BE/src/app.js - ACTUALIZADO
+// =============================================
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
@@ -8,6 +10,7 @@ import professionalRoutes from './routes/professionalRoutes.js';
 import categoryRoutes from './routes/categoryRoutes.js';
 import reviewRoutes from './routes/reviewRoutes.js';
 import contactRoutes from './routes/contactRoutes.js';
+import serviceRoutes from './routes/serviceRoutes.js';
 
 dotenv.config();
 
@@ -25,7 +28,7 @@ app.use(express.urlencoded({ extended: true }));
 // Logging middleware en desarrollo
 if (process.env.NODE_ENV === 'development') {
     app.use((req, res, next) => {
-        console.log(`${req.method} ${req.path}`);
+        console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`);
         next();
     });
 }
@@ -54,10 +57,12 @@ app.use('/api/professionals', professionalRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/reviews', reviewRoutes);
 app.use('/api/contacts', contactRoutes);
+app.use('/api/services', serviceRoutes);
 
 // Manejo de rutas no encontradas
 app.use((req, res) => {
     res.status(404).json({
+        success: false,
         error: 'Ruta no encontrada',
         path: req.originalUrl
     });
@@ -67,6 +72,7 @@ app.use((req, res) => {
 app.use((err, req, res, next) => {
     console.error('Error:', err);
     res.status(err.status || 500).json({
+        success: false,
         error: err.message || 'Error interno del servidor',
         ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
     });

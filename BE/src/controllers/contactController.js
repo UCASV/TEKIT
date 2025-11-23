@@ -1,4 +1,9 @@
+// =============================================
+// BE/src/controllers/contactController.js - CORREGIDO
+// =============================================
 import { Contact } from '../models/Contact.js';
+import { successResponse, errorResponse } from '../config/constants.js';
+import { MESSAGES } from '../config/constants.js';
 
 export const registerContact = async (req, res) => {
     try {
@@ -30,7 +35,20 @@ export const registerContact = async (req, res) => {
 
 export const getContactStats = async (req, res) => {
     try {
-        const stats = await Contact.getStats(req.user.id);
+        // Obtener el perfil profesional del usuario autenticado
+        const pool = await getConnection();
+        const profile = await pool.request()
+            .input('usuario_id', sql.Int, req.user.id)
+            .query(`
+                SELECT id FROM Perfiles_Profesionales
+                WHERE usuario_id = @usuario_id
+            `);
+
+        if (!profile.recordset[0]) {
+            return errorResponse(res, 'Perfil profesional no encontrado', 404);
+        }
+
+        const stats = await Contact.getStats(profile.recordset[0].id);
         return successResponse(res, stats);
 
     } catch (error) {

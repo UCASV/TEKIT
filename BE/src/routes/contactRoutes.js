@@ -1,4 +1,5 @@
-import { registerContact, getContactStats } from '../controllers/index.js';
+import express from 'express';
+import { registerContact, getContactStats } from '../controllers/contactController.js';
 import { authenticate, authorize } from '../middlewares/auth.js';
 import { ROLES } from '../config/constants.js';
 

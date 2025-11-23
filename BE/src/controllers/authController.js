@@ -19,6 +19,8 @@ export const register = async (req, res) => {
             hourlyRate
         } = req.body;
 
+        console.log('Datos recibidos:', { firstName, lastName, email, phone, accountType });
+
         // Validaciones básicas
         if (!firstName || !lastName || !email || !password) {
             return errorResponse(res, MESSAGES.REQUIRED_FIELDS, 400);
@@ -36,6 +38,8 @@ export const register = async (req, res) => {
         // Determinar rol
         const rol_id = accountType === 'professional' ? ROLES.PROFESIONAL : ROLES.CLIENTE;
 
+        console.log('Creando usuario con rol:', rol_id);
+
         // Crear usuario
         const userData = {
             nombre: firstName,
@@ -47,18 +51,22 @@ export const register = async (req, res) => {
         };
 
         const newUser = await User.create(userData);
+        console.log('Usuario creado:', newUser.id);
 
         // Si es profesional, crear perfil profesional
         if (accountType === 'professional' && profession) {
+            const experienceYears = experience ? parseInt(experience.split('-')[0]) : 0;
+            
             const professionalData = {
                 usuario_id: newUser.id,
                 titulo: profession,
                 descripcion: description || '',
-                ubicacion: 'El Salvador', // Default, se puede actualizar después
+                ubicacion: 'El Salvador',
                 tarifa_por_hora: parseFloat(hourlyRate) || 0,
-                años_experiencia: parseInt(experience?.split('-')[0]) || 0
+                años_experiencia: experienceYears
             };
 
+            console.log('Creando perfil profesional:', professionalData);
             await Professional.create(professionalData);
         }
 
@@ -90,6 +98,8 @@ export const login = async (req, res) => {
     try {
         const { email, password } = req.body;
 
+        console.log('Intento de login:', email);
+
         if (!email || !password) {
             return errorResponse(res, MESSAGES.REQUIRED_FIELDS, 400);
         }
@@ -98,13 +108,17 @@ export const login = async (req, res) => {
         const user = await User.findByEmail(email);
         
         if (!user) {
+            console.log('Usuario no encontrado');
             return errorResponse(res, MESSAGES.INVALID_CREDENTIALS, 401);
         }
+
+        console.log('Usuario encontrado:', user.id);
 
         // Verificar password
         const isValidPassword = await comparePassword(password, user.password);
         
         if (!isValidPassword) {
+            console.log('Contraseña inválida');
             return errorResponse(res, MESSAGES.INVALID_CREDENTIALS, 401);
         }
 
@@ -136,13 +150,12 @@ export const login = async (req, res) => {
 
 export const getProfile = async (req, res) => {
     try {
-        const user = await User.findById(req.user.id);
+        const user = await User.findById(req.user.userId);
         
         if (!user) {
             return errorResponse(res, MESSAGES.USER_NOT_FOUND, 404);
         }
 
-        // Si es profesional, obtener perfil completo
         let profileData = {
             id: user.id,
             nombre: user.nombre,
@@ -174,7 +187,7 @@ export const updateProfile = async (req, res) => {
     try {
         const { nombre, apellido, telefono, foto_perfil } = req.body;
 
-        const updatedUser = await User.update(req.user.id, {
+        const updatedUser = await User.update(req.user.userId, {
             nombre,
             apellido,
             telefono,

@@ -1,7 +1,7 @@
 import { Container, Row, Col, Card, Form, Button, Alert } from 'react-bootstrap'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useState } from 'react'
-import { useAuth } from '../context/AuthContext'
+import { useAuth } from '../../context/AuthContext'
 
 function Login() {
   const navigate = useNavigate()

@@ -1,3 +1,6 @@
+// =============================================
+// BE/src/controllers/categoryController.js - CORREGIDO
+// =============================================
 import { Category } from '../models/Category.js';
 import { successResponse, errorResponse } from '../config/constants.js';
 
@@ -23,6 +26,18 @@ export const getCategoryById = async (req, res) => {
         return successResponse(res, category);
     } catch (error) {
         console.error('Error obteniendo categoría:', error);
+        return errorResponse(res, error.message, 500);
+    }
+};
+
+export const getCategoryStats = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const stats = await Category.getStats(parseInt(id));
+        
+        return successResponse(res, stats);
+    } catch (error) {
+        console.error('Error obteniendo estadísticas:', error);
         return errorResponse(res, error.message, 500);
     }
 };

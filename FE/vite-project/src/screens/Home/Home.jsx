@@ -221,26 +221,7 @@ function Home() {
             </Button>
           </div>
           
-          {/* Botones experimentales para ver perfiles */}
-          <div className="mt-4 pt-4 border-top border-white border-opacity-25">
-            <p className="mb-3 text-white-50 small">Vista de Perfiles (Experimental)</p>
-            <div className="d-flex justify-content-center gap-3 flex-wrap">
-              <Button
-                variant="outline-light"
-                size="sm"
-                onClick={() => navigate('/perfil-cliente')}
-              >
-                👤 Ver Perfil Cliente
-              </Button>
-              <Button
-                variant="outline-light"
-                size="sm"
-                onClick={() => navigate('/perfil-contratante')}
-              >
-                💼 Ver Perfil Profesional
-              </Button>
-            </div>
-          </div>
+
         </Container>
       </section>
 

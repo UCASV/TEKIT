@@ -1,11 +1,6 @@
-
-// =============================================
-// BE/src/models/Professional.js
-// =============================================
 import { getConnection, sql } from '../config/database.js';
 
 export class Professional {
-    // Crear perfil profesional
     static async create(professionalData) {
         try {
             const pool = await getConnection();
@@ -29,12 +24,10 @@ export class Professional {
         }
     }
 
-    // Obtener perfil completo
     static async getFullProfile(usuario_id) {
         try {
             const pool = await getConnection();
             
-            // Perfil base
             const profile = await pool.request()
                 .input('usuario_id', sql.Int, usuario_id)
                 .query(`
@@ -46,22 +39,18 @@ export class Professional {
 
             const perfil = profile.recordset[0];
 
-            // Experiencias
             const experiencias = await pool.request()
                 .input('profesional_id', sql.Int, perfil.perfil_id)
                 .query(`SELECT * FROM Experiencias WHERE profesional_id = @profesional_id ORDER BY id DESC`);
 
-            // Habilidades
             const habilidades = await pool.request()
                 .input('profesional_id', sql.Int, perfil.perfil_id)
                 .query(`SELECT * FROM Habilidades WHERE profesional_id = @profesional_id`);
 
-            // Certificaciones
             const certificaciones = await pool.request()
                 .input('profesional_id', sql.Int, perfil.perfil_id)
                 .query(`SELECT * FROM Certificaciones WHERE profesional_id = @profesional_id`);
 
-            // Proyectos
             const proyectos = await pool.request()
                 .input('profesional_id', sql.Int, perfil.perfil_id)
                 .query(`SELECT * FROM Proyectos WHERE profesional_id = @profesional_id ORDER BY id DESC`);
@@ -78,7 +67,6 @@ export class Professional {
         }
     }
 
-    // Buscar profesionales con filtros
     static async search(filters = {}) {
         try {
             const pool = await getConnection();
@@ -88,6 +76,18 @@ export class Professional {
             `;
             const request = pool.request();
 
+            // Filtro por búsqueda general
+            if (filters.busqueda) {
+                query += ` AND (
+                    nombre LIKE @busqueda OR 
+                    apellido LIKE @busqueda OR 
+                    titulo LIKE @busqueda OR 
+                    descripcion LIKE @busqueda
+                )`;
+                request.input('busqueda', sql.NVarChar, `%${filters.busqueda}%`);
+            }
+
+            // Filtro por categoría
             if (filters.categoria_id) {
                 query += ` AND perfil_id IN (
                     SELECT DISTINCT profesional_id 
@@ -126,7 +126,6 @@ export class Professional {
         }
     }
 
-    // Actualizar perfil
     static async update(profesional_id, data) {
         try {
             const pool = await getConnection();
@@ -146,6 +145,25 @@ export class Professional {
                     OUTPUT INSERTED.*
                     WHERE id = @id
                 `);
+            
+            return result.recordset[0];
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    static async getGlobalStats() {
+        try {
+            const pool = await getConnection();
+            const result = await pool.request().query(`
+                SELECT 
+                    COUNT(DISTINCT pp.id) as total_profesionales,
+                    COUNT(DISTINCT s.id) as total_servicios,
+                    COUNT(DISTINCT c.id) as total_categorias
+                FROM Perfiles_Profesionales pp
+                LEFT JOIN Servicios s ON pp.id = s.profesional_id AND s.activo = 1
+                LEFT JOIN Categorias c ON s.categoria_id = c.id AND c.activo = 1
+            `);
             
             return result.recordset[0];
         } catch (error) {

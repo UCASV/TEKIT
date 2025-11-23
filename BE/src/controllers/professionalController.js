@@ -9,8 +9,11 @@ export const searchProfessionals = async (req, res) => {
             ubicacion: req.query.location,
             tarifa_min: req.query.priceMin,
             tarifa_max: req.query.priceMax,
-            calificacion_min: req.query.rating
+            calificacion_min: req.query.rating,
+            busqueda: req.query.q
         };
+
+        console.log('Búsqueda con filtros:', filters);
 
         const professionals = await Professional.search(filters);
 
@@ -54,7 +57,7 @@ export const updateProfessionalProfile = async (req, res) => {
         } = req.body;
 
         // Obtener el perfil profesional del usuario autenticado
-        const profile = await Professional.getFullProfile(req.user.id);
+        const profile = await Professional.getFullProfile(req.user.userId);
 
         if (!profile) {
             return errorResponse(res, 'Perfil profesional no encontrado', 404);
@@ -72,6 +75,16 @@ export const updateProfessionalProfile = async (req, res) => {
 
     } catch (error) {
         console.error('Error actualizando perfil profesional:', error);
+        return errorResponse(res, error.message, 500);
+    }
+};
+
+export const getStats = async (req, res) => {
+    try {
+        const stats = await Professional.getGlobalStats();
+        return successResponse(res, stats);
+    } catch (error) {
+        console.error('Error obteniendo estadísticas:', error);
         return errorResponse(res, error.message, 500);
     }
 };

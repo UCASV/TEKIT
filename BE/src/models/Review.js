@@ -1,11 +1,7 @@
-
-// =============================================
-// BE/src/models/Review.js
-// =============================================
 import { getConnection, sql } from '../config/database.js';
 
 export class Review {
-    // Crear reseña (sin necesidad de reserva)
+    // Crear reseña
     static async create(reviewData) {
         try {
             const pool = await getConnection();
@@ -65,6 +61,63 @@ export class Review {
                 `);
             
             return result.recordset[0].total > 0;
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    // Obtener por ID
+    static async getById(id) {
+        try {
+            const pool = await getConnection();
+            const result = await pool.request()
+                .input('id', sql.Int, id)
+                .query(`
+                    SELECT * FROM Resenas
+                    WHERE id = @id
+                `);
+            
+            return result.recordset[0];
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    // Actualizar reseña
+    static async update(id, reviewData) {
+        try {
+            const pool = await getConnection();
+            const result = await pool.request()
+                .input('id', sql.Int, id)
+                .input('calificacion', sql.Int, reviewData.calificacion)
+                .input('comentario', sql.NVarChar, reviewData.comentario)
+                .query(`
+                    UPDATE Resenas 
+                    SET calificacion = @calificacion,
+                        comentario = @comentario,
+                        updatedAt = GETDATE()
+                    OUTPUT INSERTED.*
+                    WHERE id = @id
+                `);
+            
+            return result.recordset[0];
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    // Eliminar reseña
+    static async delete(id) {
+        try {
+            const pool = await getConnection();
+            await pool.request()
+                .input('id', sql.Int, id)
+                .query(`
+                    DELETE FROM Resenas
+                    WHERE id = @id
+                `);
+            
+            return true;
         } catch (error) {
             throw error;
         }
