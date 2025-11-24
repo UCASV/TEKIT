@@ -1,7 +1,7 @@
 import { getConnection, sql } from '../config/database.js';
 
 export class Booking {
-    // Obtener historial de servicios de un cliente
+    //Obtener historial de servicios de un cliente
     static async getByClient(cliente_id) {
         try {
             const pool = await getConnection();
@@ -30,13 +30,13 @@ export class Booking {
         }
     }
 
-    // NUEVO: Crear una contratación (Solicitud de servicio)
+    //Crear una contratación (Solicitud de servicio)
     static async create(data) {
         try {
             const pool = await getConnection();
             const result = await pool.request()
                 .input('cliente_id', sql.Int, data.cliente_id)
-                .input('profesional_id', sql.Int, data.profesional_id) // ID del Perfil Profesional
+                .input('profesional_id', sql.Int, data.profesional_id) 
                 .input('servicio_id', sql.Int, data.servicio_id || null)
                 .input('titulo_trabajo', sql.NVarChar, data.titulo_trabajo)
                 .input('monto_acordado', sql.Decimal(10,2), data.monto_acordado || 0)
@@ -52,7 +52,7 @@ export class Booking {
         }
     }
 
-    // NUEVO: Obtener solicitudes para el profesional (Para su Dashboard)
+    //Obtener solicitudes para el profesional (Para su Dashboard)
     static async getByProfessional(profesional_id) {
         try {
             const pool = await getConnection();
@@ -80,7 +80,7 @@ export class Booking {
         }
     }
 
-    // NUEVO: Actualizar estado (Pendiente -> Completado/Cancelado)
+    //Actualizar estado (Pendiente -> Completado/Cancelado)
     static async updateStatus(id, estado) {
         try {
             const pool = await getConnection();

@@ -1,7 +1,7 @@
 import { getConnection, sql } from '../config/database.js';
 
 export class User {
-    // Crear usuario
+
     static async create(userData) {
         try {
             const pool = await getConnection();
@@ -24,7 +24,7 @@ export class User {
         }
     }
 
-    // Buscar por email
+
     static async findByEmail(email) {
         try {
             const pool = await getConnection();
@@ -35,7 +35,7 @@ export class User {
                     FROM Usuarios u
                     INNER JOIN Roles r ON u.rol_id = r.id
                     WHERE u.email = @email
-                `); // Nota: Quité 'AND u.activo = 1' por si acaso tu DB tiene activo=0 por defecto, aunque debería ser 1.
+                `);
             
             return result.recordset[0];
         } catch (error) {
@@ -43,7 +43,8 @@ export class User {
         }
     }
 
-    // Buscar por ID
+
+
     static async findById(id) {
         try {
             const pool = await getConnection();
@@ -62,7 +63,8 @@ export class User {
         }
     }
 
-    // Actualizar usuario (Con fix para teléfono)
+
+
     static async update(id, userData) {
         try {
             const pool = await getConnection();

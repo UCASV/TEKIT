@@ -23,7 +23,6 @@ export class Service {
         }
     }
 
-    // NUEVO: Obtener servicios de un profesional específico
     static async getByProfessionalId(profesionalId) {
         try {
             const pool = await getConnection();

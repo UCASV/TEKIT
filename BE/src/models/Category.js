@@ -1,10 +1,7 @@
-// =============================================
-// BE/src/models/Category.js
-// =============================================
 import { getConnection, sql } from '../config/database.js';
 
 export class Category {
-    // Obtener todas las categorías con estadísticas reales
+    //Obtener todas las categorías con estadísticas reales
     static async getAll() {
         try {
             const pool = await getConnection();
@@ -30,7 +27,6 @@ export class Category {
         }
     }
 
-    // Obtener por ID con estadísticas
     static async getById(id) {
         try {
             const pool = await getConnection();
@@ -52,7 +48,7 @@ export class Category {
         }
     }
 
-    // Obtener estadísticas detalladas de una categoría
+    //Estadísticas detalladas de una categoría
     static async getStats(id) {
         try {
             const pool = await getConnection();

@@ -1,5 +1,5 @@
 import { Service } from '../models/Service.js';
-import { Professional } from '../models/Professional.js'; 
+import { Professional } from '../models/Professional.js';
 import { successResponse, errorResponse } from '../config/constants.js';
 
 export const createService = async (req, res) => {
@@ -7,13 +7,13 @@ export const createService = async (req, res) => {
         const { categoria_id, titulo, descripcion, precio, tipo_precio } = req.body;
 
         const profile = await Professional.getFullProfile(req.user.id);
-        
+
         if (!profile) {
             return errorResponse(res, 'Debes tener un perfil profesional para crear servicios', 403);
         }
 
         const serviceData = {
-            profesional_id: profile.perfil_id, 
+            profesional_id: profile.perfil_id,
             categoria_id,
             titulo,
             descripcion,
@@ -34,9 +34,9 @@ export const createService = async (req, res) => {
 export const getMyServices = async (req, res) => {
     try {
         const profile = await Professional.getFullProfile(req.user.id);
-        
+
         if (!profile) {
-            return successResponse(res, []); 
+            return successResponse(res, []);
         }
 
         const services = await Service.getByProfessionalId(profile.perfil_id);
@@ -76,13 +76,13 @@ export const getServicesByProfessional = async (req, res) => {
         const { id } = req.params;
 
         const profile = await Professional.getFullProfile(parseInt(id));
-        
+
         if (!profile) {
-            return successResponse(res, []); 
+            return successResponse(res, []);
         }
 
         const services = await Service.getByProfessionalId(profile.perfil_id);
-        
+
         const activeServices = services.filter(s => s.activo);
 
         return successResponse(res, activeServices);

@@ -33,9 +33,9 @@ export const createReview = async (req, res) => {
 
 export const getReviewsByProfessional = async (req, res) => {
     try {
-        const { id } = req.params; 
+        const { id } = req.params;
         const reviews = await Review.getByProfessional(id);
-        
+
         return successResponse(res, {
             reviews,
             total: reviews.length

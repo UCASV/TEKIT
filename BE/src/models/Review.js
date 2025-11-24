@@ -9,7 +9,6 @@ export class Review {
             await transaction.begin();
             const request = new sql.Request(transaction);
 
-            // 1. Insertar la reseña pública (Tabla Resenas)
             await request
                 .input('calificador_id', sql.Int, reviewData.calificador_id)
                 .input('calificado_id', sql.Int, reviewData.calificado_id)
@@ -20,8 +19,9 @@ export class Review {
                     VALUES (@calificador_id, @calificado_id, @calificacion, @comentario);
                 `);
 
-            // 2. Actualizar la contratación específica (Tabla Contrataciones)
-            // ESTO ES LO QUE FALTABA: Guardar la calificación en el historial del servicio
+
+
+
             if (reviewData.contratacion_id) {
                 const requestBooking = new sql.Request(transaction);
                 await requestBooking
@@ -43,7 +43,7 @@ export class Review {
         }
     }
 
-    // ... (el método getByProfessional queda igual)
+
     static async getByProfessional(profesional_usuario_id) {
         try {
             const pool = await getConnection();

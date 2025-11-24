@@ -59,7 +59,7 @@ export const updateProfessionalProfile = async (req, res) => {
         } = req.body;
 
         // Usamos req.user.id porque viene del token (ID de Usuario)
-        const profile = await Professional.getFullProfile(req.user.id); 
+        const profile = await Professional.getFullProfile(req.user.id);
 
         if (!profile) {
             return errorResponse(res, 'Perfil profesional no encontrado', 404);

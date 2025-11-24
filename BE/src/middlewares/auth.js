@@ -2,6 +2,8 @@ import { verifyToken } from '../utils/helpers.js';
 import { User } from '../models/User.js';
 import { errorResponse } from '../config/constants.js';
 
+
+
 export const authenticate = async (req, res, next) => {
     try {
         const token = req.headers.authorization?.split(' ')[1];
@@ -35,6 +37,8 @@ export const authenticate = async (req, res, next) => {
         return errorResponse(res, 'Error de autenticación', 401);
     }
 };
+
+
 
 export const authorize = (...roles) => {
     return (req, res, next) => {
