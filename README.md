@@ -238,7 +238,7 @@ SQL Server (Database)
 
 
 ---
-
+```
 TEKIT/
 ├── BE/
 │   ├── src/
@@ -252,22 +252,25 @@ TEKIT/
 │   ├── utils/
 │   ├── .env
 │   └── createAdmin.js
-└── FE / vite-project/
-    ├── public/
-    ├── src/
-    │   ├── assets/
-    │   ├── components/
-    │   ├── screens/
-    │   ├── context/
-    │   ├── services/
-    │   ├── routes/
-    │   ├── hooks/
-    │   ├── utils/
-    │   ├── App.jsx
-    │   ├── main.jsx
-    │   └── index.css
-    ├── .env.local
-    └── vite.config.js
+│
+└── FE/
+    └── vite-project/
+        ├── public/
+        ├── src/
+        │   ├── assets/
+        │   ├── components/
+        │   ├── screens/
+        │   ├── context/
+        │   ├── services/
+        │   ├── routes/
+        │   ├── hooks/
+        │   ├── utils/
+        │   ├── App.jsx
+        │   ├── main.jsx
+        │   └── index.css
+        ├── .env.local
+        └── vite.config.js
+```
 
 
 ---
