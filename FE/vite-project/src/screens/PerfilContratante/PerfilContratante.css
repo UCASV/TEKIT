@@ -3,7 +3,6 @@
   background-color: #f9fafb;
 }
 
-/* Header Section */
 .perfil-header {
   background: white;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
@@ -28,7 +27,6 @@
   padding-bottom: 2rem;
 }
 
-/* Avatar Section */
 .avatar-section {
   flex-shrink: 0;
 }
@@ -73,7 +71,7 @@
   display: none;
 }
 
-/* Info Section */
+
 .info-section {
   flex-grow: 1;
   padding-top: 5rem;
@@ -206,7 +204,7 @@
   color: #6b7280;
 }
 
-/* Info Actions */
+
 .info-actions {
   margin-top: 1rem;
   text-align: right;
@@ -537,7 +535,6 @@
   margin: 0;
 }
 
-/* Habilidades */
 .add-input-container {
   display: flex;
   gap: 0.5rem;
@@ -617,7 +614,6 @@
   height: 1rem;
 }
 
-/* Certificaciones */
 .certificaciones-section {
   margin-top: 1.5rem;
   padding-top: 1.5rem;
@@ -671,7 +667,7 @@
   color: #b91c1c;
 }
 
-/* Proyectos */
+
 .proyectos-list {
   display: flex;
   flex-direction: column;
@@ -743,7 +739,7 @@
   margin: 0;
 }
 
-/* Reseñas */
+
 .resenas-list {
   display: flex;
   flex-direction: column;
@@ -807,7 +803,7 @@
   margin: 0;
 }
 
-/* Sidebar */
+
 .sidebar-content {
   align-self: start;
 }

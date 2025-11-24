@@ -1,19 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { 
-  Search, 
+import {
+  Search,
   Tag,
   Briefcase,
   ChevronRight,
   Users,
   TrendingUp
 } from 'lucide-react';
-import { categoryAPI } from '../../services/api'; // Importar API
-
+import { categoryAPI } from '../../services/api';
 const CategoriesClient = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
-  const [categorias, setCategorias] = useState([]); 
+  const [categorias, setCategorias] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -32,24 +31,24 @@ const CategoriesClient = () => {
     fetchCategories();
   }, []);
 
-  // Filtrar categorías por búsqueda
+
   const categoriasFiltradas = categorias.filter(cat =>
     cat.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
     cat.descripcion.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // Categorías más populares (top 4, ordenadas por número de profesionales)
+  //Categorías más populares ordenadas por número de profesionales
   const categoriasPopulares = [...categorias]
-    .sort((a, b) => (b.total_profesionales || 0) - (a.total_profesionales || 0)) 
+    .sort((a, b) => (b.total_profesionales || 0) - (a.total_profesionales || 0))
     .slice(0, 4);
 
-  // Manejar clic en categoría - FIX DE ENLACE A /buscar
+
   const handleCategoryClick = (categoriaId, categoriaNombre) => {
     navigate(`/buscar?category=${categoriaId}&name=${encodeURIComponent(categoriaNombre)}`);
   };
 
   const isPopular = (categoriaId) => categoriasPopulares.some(cat => cat.id === categoriaId);
-  
+
   const renderPopularityBadge = (categoriaId) => {
     if (isPopular(categoriaId)) {
       return (
@@ -89,8 +88,8 @@ const CategoriesClient = () => {
         <div className="card border-0 shadow-sm mb-4">
           <div className="card-body p-4">
             <div className="text-center mb-4">
-              <div className="d-inline-flex align-items-center justify-content-center mb-3 p-3 rounded-circle" 
-                   style={{ backgroundColor: '#eef2ff' }}>
+              <div className="d-inline-flex align-items-center justify-content-center mb-3 p-3 rounded-circle"
+                style={{ backgroundColor: '#eef2ff' }}>
                 <Tag size={32} style={{ color: '#312e81' }} />
               </div>
               <h1 className="h2 fw-bold mb-2">Explora Nuestras Categorías</h1>
@@ -128,7 +127,7 @@ const CategoriesClient = () => {
             <div className="row g-3">
               {categoriasPopulares.map((categoria) => (
                 <div key={categoria.id} className="col-md-6 col-lg-3">
-                  <div 
+                  <div
                     className="card border-0 shadow-sm h-100 cursor-pointer hover-lift"
                     onClick={() => handleCategoryClick(categoria.id, categoria.nombre)}
                     style={{ cursor: 'pointer', transition: 'transform 0.2s' }}
@@ -154,10 +153,10 @@ const CategoriesClient = () => {
         <div className="card border-0 shadow-sm">
           <div className="card-body p-4">
             <h2 className="h5 fw-bold mb-4">
-              {searchTerm ? 'Resultados de búsqueda' : 'Todas las Categorías'} 
+              {searchTerm ? 'Resultados de búsqueda' : 'Todas las Categorías'}
               <span className="text-muted fw-normal ms-2">({categoriasFiltradas.length})</span>
             </h2>
-            
+
             {categoriasFiltradas.length === 0 ? (
               <div className="text-center py-5">
                 <div className="mb-3">🔍</div>
@@ -170,10 +169,10 @@ const CategoriesClient = () => {
               <div className="row g-3">
                 {categoriasFiltradas.map((categoria) => (
                   <div key={categoria.id} className="col-12">
-                    <div 
+                    <div
                       className="border rounded p-3 cursor-pointer"
                       onClick={() => handleCategoryClick(categoria.id, categoria.nombre)}
-                      style={{ 
+                      style={{
                         cursor: 'pointer',
                         transition: 'all 0.2s',
                         backgroundColor: '#fff'
@@ -202,7 +201,7 @@ const CategoriesClient = () => {
                         >
                           {categoria.icono}
                         </div>
-                        
+
                         {/* Contenido */}
                         <div className="flex-grow-1">
                           <div className="d-flex justify-content-between align-items-start mb-2">
@@ -225,7 +224,7 @@ const CategoriesClient = () => {
                                 </div>
                               </div>
                             </div>
-                            
+
                             {/* Flecha */}
                             <div className="d-flex align-items-center ps-3">
                               <ChevronRight size={24} className="text-primary" />
@@ -281,5 +280,6 @@ const CategoriesClient = () => {
     </div>
   );
 };
+
 
 export default CategoriesClient;

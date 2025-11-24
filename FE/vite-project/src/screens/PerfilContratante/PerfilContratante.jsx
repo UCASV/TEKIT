@@ -13,7 +13,7 @@ const PerfilContratante = ({ editingMode = false, profileUserId }) => {
   const navigate = useNavigate();
   const { user, updateProfile: updateAuthProfile } = useAuth();
   
-  // --- ESTADOS ---
+  //Estados
   const [activeTab, setActiveTab] = useState(editingMode ? 'sobre-mi' : 'servicios');
   const [isEditing, setIsEditing] = useState(editingMode);
   
@@ -27,17 +27,15 @@ const PerfilContratante = ({ editingMode = false, profileUserId }) => {
   const [categoriesList, setCategoriesList] = useState([]);
   const [locationsList, setLocationsList] = useState([]);
 
-  // Modal Solicitud
+  //SSolicitud
   const [showRequestModal, setShowRequestModal] = useState(false);
   const [selectedService, setSelectedService] = useState(null); 
   const [requestDetails, setRequestDetails] = useState(''); 
 
-  // Toasts
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
   const [toastVariant, setToastVariant] = useState('success');
 
-  // Inputs Arrays
   const [nuevaHabilidad, setNuevaHabilidad] = useState('');
   const [nuevaCertificacion, setNuevaCertificacion] = useState('');
   const [mostrarInputHabilidad, setMostrarInputHabilidad] = useState(false);
@@ -45,7 +43,7 @@ const PerfilContratante = ({ editingMode = false, profileUserId }) => {
 
   const isMyProfile = user?.rol_id === 2 && user?.id === parseInt(targetId); 
 
-  // --- HANDLERS ---
+
   const updateField = (field, value) => { setPerfilTemp({ ...perfilTemp, [field]: value }); };
   
   const handleTarifaChange = (e) => { 
@@ -62,7 +60,7 @@ const PerfilContratante = ({ editingMode = false, profileUserId }) => {
     } 
   };
 
-  // Arrays
+
   const addExperiencia = () => { setPerfilTemp({ ...perfilTemp, experiencia: [...perfilTemp.experiencia, { puesto: "", periodo: "", descripcion: "" }] }); };
   const updateExperiencia = (index, field, value) => { const newExp = [...perfilTemp.experiencia]; newExp[index][field] = value; setPerfilTemp({ ...perfilTemp, experiencia: newExp }); };
   const deleteExperiencia = (index) => { const newExp = perfilTemp.experiencia.filter((_, i) => i !== index); setPerfilTemp({ ...perfilTemp, experiencia: newExp }); };
@@ -77,21 +75,17 @@ const PerfilContratante = ({ editingMode = false, profileUserId }) => {
   const updateProyecto = (index, field, value) => { const newProj = [...perfilTemp.proyectos]; newProj[index][field] = value; setPerfilTemp({ ...perfilTemp, proyectos: newProj }); };
   const deleteProyecto = (index) => { const newProj = perfilTemp.proyectos.filter((_, i) => i !== index); setPerfilTemp({ ...perfilTemp, proyectos: newProj }); };
 
-  // --- LÓGICA WHATSAPP CORREGIDA ---
-  
-  // Función auxiliar para formatear el número
+
   const formatForWhatsApp = (phone) => {
     if (!phone) return '';
-    // 1. Quitar todo lo que no sea número (espacios, guiones, paréntesis, +)
+
     let cleaned = phone.replace(/\D/g, '');
     
-    // 2. Si el número tiene 8 dígitos (formato local SV), agregarle 503
     if (cleaned.length === 8) {
         return `503${cleaned}`;
     }
     
-    // 3. Si ya empieza con 503 (11 dígitos), dejarlo así.
-    // O si es otro número internacional, asumimos que está bien.
+
     return cleaned;
   };
 
@@ -112,7 +106,7 @@ const PerfilContratante = ({ editingMode = false, profileUserId }) => {
         });
         await contactAPI.register({ profesional_id: perfil.perfil_id });
         
-        // USAMOS LA FUNCIÓN DE FORMATEO AQUÍ
+
         const whatsappNumber = formatForWhatsApp(perfil.telefono);
         
         if (whatsappNumber) {
@@ -181,7 +175,7 @@ const PerfilContratante = ({ editingMode = false, profileUserId }) => {
   
   const handleCancel = () => { setPerfilTemp({...perfil}); setIsEditing(false); };
 
-  // --- EFECTOS ---
+
   useEffect(() => {
     if (editingMode) { setActiveTab('sobre-mi'); setIsEditing(true); }
     if (!targetId) { setLoading(false); return; }

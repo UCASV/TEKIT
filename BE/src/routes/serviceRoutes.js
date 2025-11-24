@@ -4,13 +4,13 @@ import { authenticate } from '../middlewares/auth.js';
 
 const router = express.Router();
 
-// Rutas protegidas
+//Rutas protegidas
 router.post('/', authenticate, createService);
 router.get('/my-services', authenticate, getMyServices);
 router.delete('/:id', authenticate, deleteService);
 
-// Rutas públicas
-// router.get('/category/:id', getServicesByCategory); // (Opcional, si la usas)
-router.get('/professional/:id', getServicesByProfessional); // <--- NUEVA RUTA
+
+//Rutas públicas
+router.get('/professional/:id', getServicesByProfessional);
 
 export default router;

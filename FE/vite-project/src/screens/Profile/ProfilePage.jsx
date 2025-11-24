@@ -10,8 +10,8 @@ function ProfilePage() {
     const { user, isAuthenticated, hasRole } = useAuth();
     const [activeKey, setActiveKey] = useState('loading');
     const isProfessional = hasRole(2);
-    
-    // Determinar la pestaña inicial una vez que el usuario esté cargado
+
+
     useEffect(() => {
         if (isAuthenticated) {
             if (isProfessional) {
@@ -21,12 +21,12 @@ function ProfilePage() {
             }
         }
     }, [isAuthenticated, isProfessional]);
-    
+
     if (!isAuthenticated) {
         return <Alert variant="danger" className="my-5 container">Debes iniciar sesión para ver tu perfil.</Alert>;
     }
-    
-    // Si la clave es 'loading' significa que estamos esperando el efecto
+
+
     if (activeKey === 'loading') {
         return <Spinner animation="border" variant="primary" className="d-block mx-auto my-5" />;
     }
@@ -62,7 +62,7 @@ function ProfilePage() {
                             </Nav.Item>
                         </Nav>
                     </Col>
-                    
+
                     <Col md={9}>
                         <Card className="border-0 shadow-sm p-4">
                             <Tab.Content>
@@ -72,13 +72,13 @@ function ProfilePage() {
                                         <DashboardContent />
                                     </Tab.Pane>
                                 )}
-                                
+
                                 <Tab.Pane eventKey="public-profile">
                                     <h3 className="h4 fw-bold mb-4">Edición de Perfil Público</h3>
                                     {/* Usa PerfilContratante en modo edición para el propio usuario */}
                                     <PerfilContratante editingMode={true} profileUserId={user.id} />
                                 </Tab.Pane>
-                                
+
                                 <Tab.Pane eventKey="client-profile">
                                     <h3 className="h4 fw-bold mb-4">Datos Personales y Historial</h3>
                                     {/* Muestra la vista de cliente (compatible para ambos roles) */}

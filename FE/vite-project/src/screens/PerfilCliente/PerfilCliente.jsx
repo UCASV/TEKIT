@@ -10,7 +10,7 @@ const PerfilCliente = () => {
   const [loading, setLoading] = useState(true);
   const [bookings, setBookings] = useState([]);
   
-  // Estado para el Modal de Reseña
+
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [selectedBooking, setSelectedBooking] = useState(null);
   const [reviewForm, setReviewForm] = useState({ rating: 5, comment: '' });
@@ -68,7 +68,6 @@ const PerfilCliente = () => {
     }
   };
 
-  // --- LÓGICA DE RESEÑAS ACTUALIZADA ---
   const handleOpenReview = (booking) => {
     setSelectedBooking(booking);
     setReviewForm({ rating: 5, comment: '' });
@@ -83,10 +82,10 @@ const PerfilCliente = () => {
             calificado_id: selectedBooking.profesional_usuario_id, 
             calificacion: reviewForm.rating,
             comentario: reviewForm.comment,
-            contratacion_id: selectedBooking.id // <--- ESTO ES CRÍTICO
+            contratacion_id: selectedBooking.id 
         });
         
-        // Actualización optimista en el cliente
+
         setBookings(prevBookings => 
             prevBookings.map(booking => 
                 booking.id === selectedBooking.id 
@@ -102,8 +101,8 @@ const PerfilCliente = () => {
         alert('Error al enviar la reseña.');
     }
   };
-  // -------------------------------
 
+  
   const renderStars = (rating) => (
     <div className="d-flex align-items-center gap-1">
       {[...Array(5)].map((_, i) => (

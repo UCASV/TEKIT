@@ -1,7 +1,7 @@
 import { authAPI } from './api';
 
 class AuthService {
-    //Login
+
     async login(credentials) {
         try {
             const response = await authAPI.login(credentials);
@@ -11,14 +11,13 @@ class AuthService {
                 return response.data;
             }
             
-            // Si la respuesta indica fallo, pero no es un error HTTP, lanzar un error para ser capturado por el componente
+            //Si la respuesta indica fallo, pero no es un error HTTP, lanzar un error para ser capturado por el componente
             throw new Error(response.message || 'Error en el inicio de sesión');
         } catch (error) {
             throw error;
         }
     }
 
-    //Register
     async register(userData) {
         try {
             const response = await authAPI.register(userData);
@@ -34,27 +33,25 @@ class AuthService {
         }
     }
 
-    //Logout
     logout() {
         localStorage.removeItem('token');
         localStorage.removeItem('user');
     }
 
-    //Guardar sesión
+
     setSession(token, user) {
         localStorage.setItem('token', token);
         localStorage.setItem('user', JSON.stringify(user));
     }
 
-    //Obtener usuario actual
     getCurrentUser() {
         const userStr = localStorage.getItem('user');
         if (userStr) {
             try {
-                // Intentar parsear el JSON
+
                 return JSON.parse(userStr);
             } catch (e) {
-                // Si el JSON es corrupto (causa de la pantalla en blanco), limpiar y devolver null
+                
                 console.error("Error al parsear el usuario de localStorage:", e);
                 this.logout();
                 return null;
@@ -63,23 +60,21 @@ class AuthService {
         return null;
     }
 
-    //Obtener token
+
     getToken() {
         return localStorage.getItem('token');
     }
 
-    //Verificar si está autenticado
     isAuthenticated() {
         return !!this.getToken();
     }
 
-    //Verificar rol
     hasRole(roleId) {
         const user = this.getCurrentUser();
         return user && user.rol_id === roleId;
     }
 
-    //Obtener perfil actualizado
+
     async getProfile() {
         try {
             const response = await authAPI.getProfile();
@@ -94,12 +89,11 @@ class AuthService {
         }
     }
 
-    //Actualizar perfil
     async updateProfile(data) {
         try {
             const response = await authAPI.updateProfile(data);
             if (response.success) {
-                await this.getProfile(); // Actualizar datos locales
+                await this.getProfile(); 
                 return response.data;
             }
         } catch (error) {

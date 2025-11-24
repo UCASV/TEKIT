@@ -28,7 +28,6 @@ export class Professional {
         try {
             const pool = await getConnection();
             
-            // Obtener perfil base
             const profile = await pool.request()
                 .input('usuario_id', sql.Int, usuario_id)
                 .query(`
@@ -40,7 +39,6 @@ export class Professional {
 
             const perfil = profile.recordset[0];
 
-            // Obtener datos relacionados
             const request = pool.request();
             request.input('profesional_id', sql.Int, perfil.perfil_id);
 
@@ -118,7 +116,6 @@ export class Professional {
         }
     }
 
-    // METODO ACTUALIZADO PARA GUARDAR TODO
     static async update(profesional_id, data) {
         const pool = await getConnection();
         const transaction = new sql.Transaction(pool);
@@ -127,7 +124,6 @@ export class Professional {
             await transaction.begin();
             const request = new sql.Request(transaction);
 
-            // 1. Actualizar datos principales del perfil
             await request
                 .input('id', sql.Int, profesional_id)
                 .input('titulo', sql.NVarChar, data.titulo)
@@ -145,9 +141,8 @@ export class Professional {
                     WHERE id = @id
                 `);
 
-            // 2. Actualizar Experiencias (Borrar y Reinsertar)
             if (data.experiencias) {
-                // Usamos un nuevo request para cada query dentro de la transacción
+                //Usamos un nuevo request para cada query dentro de la transacción
                 const reqDelExp = new sql.Request(transaction);
                 await reqDelExp.input('pid', sql.Int, profesional_id)
                      .query('DELETE FROM Experiencias WHERE profesional_id = @pid');
@@ -163,7 +158,6 @@ export class Professional {
                 }
             }
 
-            // 3. Actualizar Habilidades
             if (data.habilidades) {
                 const reqDelHab = new sql.Request(transaction);
                 await reqDelHab.input('pid', sql.Int, profesional_id)
@@ -171,7 +165,7 @@ export class Professional {
 
                 for (const hab of data.habilidades) {
                     const reqInsHab = new sql.Request(transaction);
-                    // Si viene como string simple o objeto
+
                     const nombreHab = typeof hab === 'string' ? hab : hab.nombre;
                     await reqInsHab
                         .input('pid', sql.Int, profesional_id)
@@ -180,7 +174,6 @@ export class Professional {
                 }
             }
 
-            // 4. Actualizar Certificaciones
             if (data.certificaciones) {
                 const reqDelCert = new sql.Request(transaction);
                 await reqDelCert.input('pid', sql.Int, profesional_id)
@@ -196,7 +189,6 @@ export class Professional {
                 }
             }
 
-            // 5. Actualizar Proyectos
             if (data.proyectos) {
                 const reqDelProj = new sql.Request(transaction);
                 await reqDelProj.input('pid', sql.Int, profesional_id)

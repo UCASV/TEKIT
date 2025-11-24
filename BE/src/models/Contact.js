@@ -17,7 +17,7 @@ export class Contact {
         }
     }
 
-    // MODIFICADO: Ahora obtiene estadísticas basadas en CONTRATACIONES (Solicitudes)
+    //Estadísticas basadas en CONTRATACIONES (Solicitudes)
     static async getStats(profesional_id) {
         try {
             const pool = await getConnection();

@@ -1,7 +1,3 @@
-
-// =============================================
-// BE/src/utils/validators.js
-// =============================================
 import { validationResult } from 'express-validator';
 
 export const validateRequest = (req, res, next) => {
@@ -27,6 +23,7 @@ export const isValidPhone = (phone) => {
 };
 
 export const isStrongPassword = (password) => {
-    // Mínimo 6 caracteres
+
     return password && password.length >= 6;
+
 };

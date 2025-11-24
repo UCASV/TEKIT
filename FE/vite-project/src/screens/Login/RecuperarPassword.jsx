@@ -21,7 +21,7 @@ function RecuperarPassword() {
       return;
     }
 
-    // Simulación de llamada API (no hay endpoint BE de recuperación de contraseña)
+    //Simulación de llamada API (no hay endpoint de recuperación de contraseña)
     setTimeout(() => {
         setLoading(false);
         if (email === 'error@example.com') {
