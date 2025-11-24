@@ -1,5 +1,5 @@
 ---
-# TEKIT – Marketplace de Servicios Profesionales
+# TEKIT 
 
 Plataforma web que conecta *clientes* con *profesionales verificados* en áreas como fontanería, electricidad, carpintería, informática, diseño, construcción y más. Permite buscar, filtrar, contactar y contratar profesionales, mientras que los profesionales pueden publicar servicios, gestionar su perfil y recibir reseñas.
 
