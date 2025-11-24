@@ -1,32 +1,28 @@
 import { useState, useEffect } from 'react'
 import { Container, Row, Col, Form, Button, Card, Badge, Spinner, Alert } from 'react-bootstrap'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { professionalAPI, categoryAPI, locationAPI } from '../../services/api' // Importamos locationAPI
+import { professionalAPI, categoryAPI, locationAPI } from '../../services/api'
 import './Search.css'
 
 function Search() {
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
   
-  // --- ESTADOS DE DATOS MAESTROS (Combos y Listas) ---
   const [categoriesList, setCategoriesList] = useState([]);
   const [locationsList, setLocationsList] = useState([]);
   const [professionals, setProfessionals] = useState([]);
   
-  // --- ESTADOS DE CARGA Y ERROR ---
-  const [loadingData, setLoadingData] = useState(true); // Para cargar categorías/ubicaciones
-  const [loadingSearch, setLoadingSearch] = useState(false); // Para buscar profesionales
+  const [loadingData, setLoadingData] = useState(true);
+  const [loadingSearch, setLoadingSearch] = useState(false);
   const [error, setError] = useState(null);
 
-  // --- VALORES INICIALES DE URL ---
   const initialCategory = searchParams.get('category') ? parseInt(searchParams.get('category')) : null;
   const initialQ = searchParams.get('q') || '';
   const initialPriceMin = parseInt(searchParams.get('priceMin')) || 0;
   const initialPriceMax = parseInt(searchParams.get('priceMax')) || 1000;
-  const initialRating = parseFloat(searchParams.get('rating')) || 0; // 0 para mostrar todos por defecto
+  const initialRating = parseFloat(searchParams.get('rating')) || 0;
   const initialLocation = searchParams.get('location') || '';
 
-  // --- ESTADOS DE FILTROS ---
   const [searchTerm, setSearchTerm] = useState(initialQ);
   const [filters, setFilters] = useState({
     categoryId: initialCategory,
@@ -36,14 +32,10 @@ function Search() {
     location: initialLocation
   });
 
-  // Estados locales para evitar parpadeo en inputs de precio
   const [localPriceMin, setLocalPriceMin] = useState(initialPriceMin.toString());
   const [localPriceMax, setLocalPriceMax] = useState(initialPriceMax.toString());
   const [sortBy, setSortBy] = useState('relevant');
 
-  // ----------------------------------------------------------------
-  // 1. EFECTO DE INICIALIZACIÓN (Carga Categorías y Ubicaciones)
-  // ----------------------------------------------------------------
   useEffect(() => {
     const fetchMasterData = async () => {
         try {
@@ -63,16 +55,12 @@ function Search() {
     fetchMasterData();
   }, []);
 
-  // ----------------------------------------------------------------
-  // 2. EFECTO DE BÚSQUEDA (Se ejecuta cuando cambian los filtros)
-  // ----------------------------------------------------------------
   useEffect(() => {
     const searchPros = async () => {
         setLoadingSearch(true);
         setError(null);
         
         try {
-            // Construir objeto de filtros para el BE
             const apiFilters = {
                 busqueda: searchTerm || undefined,
                 categoria_id: filters.categoryId || undefined,
@@ -94,36 +82,26 @@ function Search() {
         }
     };
 
-    // Debounce pequeño opcional o llamada directa
     const timer = setTimeout(() => {
         searchPros();
     }, 300);
 
     return () => clearTimeout(timer);
 
-  }, [searchTerm, filters]); // Se dispara al cambiar texto o filtros
+  }, [searchTerm, filters]);
 
-  // ----------------------------------------------------------------
-  // HANDLERS
-  // ----------------------------------------------------------------
-
-  // Manejo del formulario de búsqueda principal
   const handleSearchSubmit = (e) => {
     e.preventDefault();
-    // Actualizar URL para reflejar la búsqueda
     setSearchParams({ q: searchTerm });
-    // El useEffect detectará el cambio en searchTerm y ejecutará la búsqueda
   };
 
-  // Manejo de Categorías (Checkbox tipo Radio: solo una activa)
   const handleCategoryChange = (catId) => {
     setFilters(prev => ({
         ...prev,
-        categoryId: prev.categoryId === catId ? null : catId // Toggle: si ya está, lo quita
+        categoryId: prev.categoryId === catId ? null : catId
     }));
   };
 
-  // Manejo de Inputs de Precio (OnBlur para evitar recargas por tecla)
   const handlePriceBlur = () => {
     const min = parseInt(localPriceMin) || 0;
     const max = parseInt(localPriceMax) || 1000;
@@ -132,17 +110,14 @@ function Search() {
     }
   };
 
-  // Manejo de Ubicación
   const handleLocationChange = (e) => {
     setFilters(prev => ({ ...prev, location: e.target.value }));
   };
 
-  // Manejo de Calificación
   const handleRatingChange = (rating) => {
-    setFilters(prev => ({ ...prev, rating: prev.rating === rating ? 0 : rating })); // Toggle
+    setFilters(prev => ({ ...prev, rating: prev.rating === rating ? 0 : rating }));
   };
 
-  // Limpiar filtros
   const clearFilters = () => {
     setFilters({
       categoryId: null,
@@ -157,7 +132,6 @@ function Search() {
     setSearchParams({});
   };
 
-  // Ordenamiento local
   const getSortedProfessionals = () => {
     const list = [...professionals];
     switch (sortBy) {
@@ -170,7 +144,6 @@ function Search() {
 
   const sortedProfessionals = getSortedProfessionals();
 
-  // Helpers visuales
   const renderStars = (rating) => {
     const rounded = Math.round(rating || 0);
     return '★'.repeat(rounded) + '☆'.repeat(5 - rounded);
@@ -192,7 +165,6 @@ function Search() {
 
   return (
     <div className="search-page">
-      {/* HEADER BÚSQUEDA */}
       <section className="search-header-section">
         <Container>
           <Row className="justify-content-center">
@@ -216,7 +188,6 @@ function Search() {
 
       <Container className="mb-5 mt-4">
         <Row>
-          {/* SIDEBAR FILTROS */}
           <Col lg={3}>
             <Card className="filters-card sticky-top">
               <Card.Body>
@@ -225,18 +196,16 @@ function Search() {
                   <Button variant="link" size="sm" className="text-danger p-0" onClick={clearFilters}>Limpiar</Button>
                 </div>
 
-                {/* FILTRO CATEGORÍA (Dinámico) */}
                 <div className="filter-group">
                   <h6 className="filter-label">Categorías</h6>
                   {categoriesList.length > 0 ? categoriesList.map(cat => (
                     <Form.Check
                       key={cat.id}
-                      type="checkbox" // Visualmente check, comportamiento lógico switch
+                      type="checkbox"
                       id={`cat-${cat.id}`}
                       label={
                         <div className="d-flex justify-content-between w-100">
                             <span>{cat.nombre}</span>
-                            {/* Muestra 0 si es null/undefined */}
                             <Badge bg="light" text="dark">{cat.total_profesionales || 0}</Badge>
                         </div>
                       }
@@ -249,7 +218,6 @@ function Search() {
 
                 <hr />
 
-                {/* FILTRO PRECIO */}
                 <div className="filter-group">
                   <h6 className="filter-label">Precio por hora ($)</h6>
                   <Row>
@@ -275,7 +243,6 @@ function Search() {
 
                 <hr />
 
-                {/* FILTRO ESTRELLAS */}
                 <div className="filter-group">
                   <h6 className="filter-label">Calificación Mínima</h6>
                   {[5, 4, 3, 2, 1].map(rating => (
@@ -294,7 +261,6 @@ function Search() {
 
                 <hr />
 
-                {/* FILTRO UBICACIÓN (Dinámico) */}
                 <div className="filter-group">
                   <h6 className="filter-label">Ubicación</h6>
                   <Form.Select size="sm" value={filters.location} onChange={handleLocationChange}>
@@ -308,7 +274,6 @@ function Search() {
             </Card>
           </Col>
 
-          {/* RESULTADOS */}
           <Col lg={9}>
             <Card className="mb-3 border-0 shadow-sm">
               <Card.Body>
@@ -343,9 +308,19 @@ function Search() {
                     <Card className="professional-card h-100">
                         <Card.Body>
                         <div className="d-flex align-items-center mb-3">
-                            <div className={`avatar ${getAvatarClass(prof.usuario_id)} rounded-circle d-flex align-items-center justify-content-center text-white fw-bold me-3`}>
-                            {prof.nombre?.charAt(0)}{prof.apellido?.charAt(0)}
-                            </div>
+                            {/* [CORRECCIÓN] Mostrar foto si existe, sino iniciales */}
+                            {prof.foto_perfil ? (
+                                <img 
+                                    src={prof.foto_perfil} 
+                                    alt={`${prof.nombre} ${prof.apellido}`}
+                                    className="avatar rounded-circle object-fit-cover me-3"
+                                />
+                            ) : (
+                                <div className={`avatar ${getAvatarClass(prof.usuario_id)} rounded-circle d-flex align-items-center justify-content-center text-white fw-bold me-3`}>
+                                {prof.nombre?.charAt(0)}{prof.apellido?.charAt(0)}
+                                </div>
+                            )}
+
                             <div className="flex-grow-1">
                             <h5 className="mb-1 fs-6 text-truncate">{prof.nombre} {prof.apellido}</h5>
                             <p className="text-muted mb-1 small text-truncate">{prof.titulo}</p>

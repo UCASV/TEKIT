@@ -4,6 +4,7 @@ import { Service } from '../models/Service.js';
 import { hashPassword, comparePassword, generateToken } from '../utils/helpers.js';
 import { successResponse, errorResponse } from '../config/constants.js';
 import { ROLES, MESSAGES } from '../config/constants.js';
+import { saveProfilePicture } from '../utils/fileUpload.js'; // <--- IMPORTACIÓN AÑADIDA
 
 export const register = async (req, res) => {
     try {
@@ -169,15 +170,24 @@ export const getProfile = async (req, res) => {
     }
 };
 
+// FUNCIÓN MODIFICADA PARA GESTIONAR LA IMAGEN
 export const updateProfile = async (req, res) => {
     try {
         const { nombre, apellido, telefono, foto_perfil } = req.body;
+        const userId = req.user.id;
 
-        const updatedUser = await User.update(req.user.id, {
+        // [SOLUCIÓN]: Procesar la imagen si viene en el body
+        // Esto convertirá el Base64 a Archivo y devolverá la URL, o dejará la URL si ya era una
+        let processedImageUrl = foto_perfil;
+        if (foto_perfil) {
+            processedImageUrl = saveProfilePicture(foto_perfil, userId);
+        }
+
+        const updatedUser = await User.update(userId, {
             nombre,
             apellido,
             telefono,
-            foto_perfil
+            foto_perfil: processedImageUrl // Guardamos la URL limpia
         });
 
         return successResponse(res, updatedUser, MESSAGES.PROFILE_UPDATED);

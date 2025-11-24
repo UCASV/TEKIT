@@ -29,13 +29,12 @@ function Home() {
     fetchData()
   }, [])
   
-  // Lógica para renderizar estrellas (extraída de PerfilContratante.jsx)
+  // Lógica para renderizar estrellas
   const renderStars = (rating) => {
     const roundedRating = Math.round(rating || 0)
     return '★'.repeat(roundedRating) + '☆'.repeat(5 - roundedRating)
   }
 
-  // Hardcoded steps (part of the static UI guide)
   const steps = [
     {
       icon: '🔍',
@@ -69,7 +68,6 @@ function Home() {
     navigate(`/profesional/${professionalId}`)
   }
 
-  // Random gradient for avatar placeholder (FE only visual utility)
   const getRandomGradient = () => {
     const gradients = ['bg-gradient-purple', 'bg-gradient-blue', 'bg-gradient-green'];
     return gradients[Math.floor(Math.random() * gradients.length)];
@@ -149,9 +147,20 @@ function Home() {
                 <Card className="professional-card h-100 border-0 shadow-sm">
                   <Card.Body>
                     <div className="d-flex align-items-center mb-3">
-                      <div className={`avatar ${getRandomGradient()} rounded-circle d-flex align-items-center justify-content-center text-white fw-bold`}>
-                        {prof.nombre.charAt(0)}{prof.apellido.charAt(0)}
-                      </div>
+                      {/* [CORRECCIÓN] Mostrar foto si existe, sino iniciales */}
+                      {prof.foto_perfil ? (
+                        <img 
+                          src={prof.foto_perfil} 
+                          alt={`${prof.nombre} ${prof.apellido}`}
+                          className="avatar rounded-circle object-fit-cover"
+                          style={{border: '2px solid #fff', boxShadow: '0 2px 5px rgba(0,0,0,0.1)'}}
+                        />
+                      ) : (
+                        <div className={`avatar ${getRandomGradient()} rounded-circle d-flex align-items-center justify-content-center text-white fw-bold`}>
+                          {prof.nombre.charAt(0)}{prof.apellido.charAt(0)}
+                        </div>
+                      )}
+                      
                       <div className="ms-3 flex-grow-1">
                         <h5 className="mb-1">{prof.nombre} {prof.apellido}</h5>
                         <p className="text-muted mb-1 small">{prof.titulo}</p>
