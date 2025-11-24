@@ -9,12 +9,12 @@ import { authenticate } from '../middlewares/auth.js';
 
 const router = express.Router();
 
-// Rutas Cliente
+//Rutas Cliente
 router.get('/my-bookings', authenticate, getMyBookings);
-router.post('/', authenticate, createBooking); // Crear solicitud
+router.post('/', authenticate, createBooking); //Crear solicitud
 
-// Rutas Profesional
-router.get('/professional-requests', authenticate, getProfessionalBookings); // Ver solicitudes
-router.put('/:id/status', authenticate, updateBookingStatus); // Cambiar estado
+//Rutas Profesional
+router.get('/professional-requests', authenticate, getProfessionalBookings); 
+router.put('/:id/status', authenticate, updateBookingStatus);
 
 export default router;
