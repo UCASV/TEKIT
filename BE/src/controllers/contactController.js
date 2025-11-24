@@ -1,11 +1,8 @@
-// =============================================
-// BE/src/controllers/contactController.js - CORREGIDO
-// =============================================
 import { Contact } from '../models/Contact.js';
-import { Professional } from '../models/Professional.js'; // Importar modelo profesional
+import { Professional } from '../models/Professional.js'; 
 import { successResponse, errorResponse } from '../config/constants.js';
 import { MESSAGES } from '../config/constants.js';
-import { getConnection, sql } from '../config/database.js'; // <--- IMPORTACIÓN AÑADIDA
+import { getConnection, sql } from '../config/database.js'; 
 
 
 export const registerContact = async (req, res) => {
@@ -38,11 +35,11 @@ export const registerContact = async (req, res) => {
 
 export const getContactStats = async (req, res) => {
     try {
-        // Obtener el perfil profesional del usuario autenticado
+        //Obtener el perfil profesional del usuario autenticado
         const profile = await Professional.getFullProfile(req.user.id); 
 
         if (!profile || !profile.perfil_id) {
-            // Si no hay perfil profesional, devolver 0 stats en lugar de 404/500
+            //Si no hay perfil, devolver 0 stats en lugar de un error 404/500
             return successResponse(res, {
                 total_contactos: 0,
                 clientes_unicos: 0,
@@ -51,7 +48,6 @@ export const getContactStats = async (req, res) => {
             });
         }
 
-        // Usar el perfil_id correcto
         const stats = await Contact.getStats(profile.perfil_id);
         return successResponse(res, stats);
 
@@ -61,22 +57,19 @@ export const getContactStats = async (req, res) => {
     }
 };
 
-// NUEVO: Obtener servicios públicos de un profesional (por ID de usuario)
+//Servicios públicos de un profesional (por ID de usuario)
 export const getServicesByProfessional = async (req, res) => {
     try {
-        const { id } = req.params; // Recibimos el ID del Usuario (no del perfil)
+        const { id } = req.params; 
 
-        // 1. Obtener el ID del perfil profesional asociado al usuario
         const profile = await Professional.getFullProfile(parseInt(id));
         
         if (!profile) {
             return successResponse(res, []); // Si no hay perfil, devolvemos lista vacía
         }
 
-        // 2. Buscar servicios usando el ID del perfil
         const services = await Service.getByProfessionalId(profile.perfil_id);
         
-        // Filtrar solo los activos para la vista pública
         const activeServices = services.filter(s => s.activo);
 
         return successResponse(res, activeServices);

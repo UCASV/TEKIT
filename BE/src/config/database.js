@@ -38,7 +38,6 @@ export const getConnection = async () => {
             pool = null;
         }
 
-        // Crear nueva conexión
         console.log('🔄 Intentando conectar a SQL Server...');
         pool = await sql.connect(config);
         console.log('✅ Conectado a SQL Server (TEKIT2)');

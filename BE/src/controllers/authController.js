@@ -33,7 +33,7 @@ export const register = async (req, res) => {
             rol_id
         });
 
-        // Si es profesional, crear Perfil Y Servicio por defecto
+        //Si es profesional, crear Perfil y servicio por defecto
         if (accountType === 'professional') {
             const professionalData = {
                 usuario_id: newUser.id,
@@ -90,7 +90,7 @@ export const login = async (req, res) => {
             return errorResponse(res, MESSAGES.REQUIRED_FIELDS, 400);
         }
 
-        // 1. Buscar usuario
+        //1. Buscar usuario
         const user = await User.findByEmail(email);
         
         if (!user) {
@@ -98,7 +98,7 @@ export const login = async (req, res) => {
             return errorResponse(res, MESSAGES.INVALID_CREDENTIALS, 401);
         }
 
-        // 2. Comparar contraseña
+        //2. Comparar contraseña
         const isValidPassword = await comparePassword(password, user.password);
         
         if (!isValidPassword) {

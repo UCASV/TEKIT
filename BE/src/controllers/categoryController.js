@@ -1,6 +1,3 @@
-// =============================================
-// BE/src/controllers/categoryController.js - CORREGIDO
-// =============================================
 import { Category } from '../models/Category.js';
 import { successResponse, errorResponse } from '../config/constants.js';
 

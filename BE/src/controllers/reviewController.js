@@ -3,7 +3,6 @@ import { successResponse, errorResponse } from '../config/constants.js';
 
 export const createReview = async (req, res) => {
     try {
-        // AÑADIDO: contratacion_id
         const { calificado_id, calificacion, comentario, contratacion_id } = req.body;
         const calificador_id = req.user.id;
 
@@ -31,7 +30,7 @@ export const createReview = async (req, res) => {
     }
 };
 
-// ... (getReviewsByProfessional queda igual)
+
 export const getReviewsByProfessional = async (req, res) => {
     try {
         const { id } = req.params; 

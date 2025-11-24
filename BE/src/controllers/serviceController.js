@@ -71,22 +71,18 @@ export const deleteService = async (req, res) => {
     }
 };
 
-// --- ESTA ES LA FUNCIÓN CRÍTICA QUE SUELE FALTAR ---
 export const getServicesByProfessional = async (req, res) => {
     try {
-        const { id } = req.params; // ID del Usuario
+        const { id } = req.params;
 
-        // 1. Obtener perfil profesional
         const profile = await Professional.getFullProfile(parseInt(id));
         
         if (!profile) {
             return successResponse(res, []); 
         }
 
-        // 2. Obtener servicios
         const services = await Service.getByProfessionalId(profile.perfil_id);
         
-        // Solo activos
         const activeServices = services.filter(s => s.activo);
 
         return successResponse(res, activeServices);

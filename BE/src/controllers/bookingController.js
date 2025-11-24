@@ -2,7 +2,7 @@ import { Booking } from '../models/Booking.js';
 import { Professional } from '../models/Professional.js';
 import { successResponse, errorResponse } from '../config/constants.js';
 
-// Obtener historial del cliente (Ya existía)
+//Obtener historial del cliente
 export const getMyBookings = async (req, res) => {
     try {
         const bookings = await Booking.getByClient(req.user.id);
@@ -12,12 +12,11 @@ export const getMyBookings = async (req, res) => {
     }
 };
 
-// NUEVO: Crear solicitud
+//Crear solicitud de trabajo
 export const createBooking = async (req, res) => {
     try {
         const { profesional_id, servicio_id, titulo_trabajo, monto_acordado, detalles } = req.body;
         
-        // profesional_id aquí se refiere al ID del PERFIL, no del usuario.
         const newBooking = await Booking.create({
             cliente_id: req.user.id,
             profesional_id, 
@@ -34,10 +33,10 @@ export const createBooking = async (req, res) => {
     }
 };
 
-// NUEVO: Obtener solicitudes del profesional (Dashboard)
+//Obtener solicitudes del profesional de Dashboard
 export const getProfessionalBookings = async (req, res) => {
     try {
-        // Primero obtenemos el ID del perfil profesional del usuario logueado
+
         const profile = await Professional.getFullProfile(req.user.id);
         if (!profile) return errorResponse(res, 'No tienes perfil profesional', 403);
 
@@ -48,11 +47,10 @@ export const getProfessionalBookings = async (req, res) => {
     }
 };
 
-// NUEVO: Actualizar estado
 export const updateBookingStatus = async (req, res) => {
     try {
         const { id } = req.params;
-        const { estado } = req.body; // 'completado', 'cancelado', 'en_proceso'
+        const { estado } = req.body; // 'completado', 'cancelado', 'en proceso'
         
         await Booking.updateStatus(id, estado);
         return successResponse(res, null, 'Estado actualizado');
