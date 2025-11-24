@@ -1,427 +1,266 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { professionalAPI, reviewAPI, authAPI } from '../../services/api'; 
-import { Star, MapPin, Briefcase, Award, Clock, Mail, Phone, Calendar, Edit2, Save, X, Plus, Trash2, Camera } from 'lucide-react';
+import { professionalAPI, reviewAPI, authAPI, categoryAPI, locationAPI, serviceAPI, contactAPI, bookingAPI } from '../../services/api'; 
+import { Star, MapPin, Briefcase, Award, Clock, Mail, Phone, Calendar, Edit2, Save, X, Plus, Trash2, Camera, DollarSign, MessageCircle } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import NotFound from '../NotFound/NotFound'; 
-import { Alert, Spinner, Button } from 'react-bootstrap'; 
+import { Alert, Spinner, Button, Form, Badge, Card, Modal, Toast, ToastContainer } from 'react-bootstrap'; 
 import './PerfilContratante.css';
 
 const PerfilContratante = ({ editingMode = false, profileUserId }) => { 
   const { id } = useParams(); 
-  
   const targetId = profileUserId || id;
   const navigate = useNavigate();
   const { user, updateProfile: updateAuthProfile } = useAuth();
   
-  // ===============================================
-  // HOOKS (TODOS ARRIBA)
-  // ===============================================
-  const [activeTab, setActiveTab] = useState('sobre-mi');
+  // --- ESTADOS ---
+  const [activeTab, setActiveTab] = useState(editingMode ? 'sobre-mi' : 'servicios');
   const [isEditing, setIsEditing] = useState(editingMode);
   
   const [perfil, setPerfil] = useState(null); 
   const [perfilTemp, setPerfilTemp] = useState(null);
   const [reviews, setReviews] = useState([]);
+  const [services, setServices] = useState([]); 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Hooks para la lógica de edición de arrays
+  const [categoriesList, setCategoriesList] = useState([]);
+  const [locationsList, setLocationsList] = useState([]);
+
+  // Modal Solicitud
+  const [showRequestModal, setShowRequestModal] = useState(false);
+  const [selectedService, setSelectedService] = useState(null); 
+  const [requestDetails, setRequestDetails] = useState(''); 
+
+  // Toasts
+  const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
+  const [toastVariant, setToastVariant] = useState('success');
+
+  // Inputs Arrays
   const [nuevaHabilidad, setNuevaHabilidad] = useState('');
   const [nuevaCertificacion, setNuevaCertificacion] = useState('');
   const [mostrarInputHabilidad, setMostrarInputHabilidad] = useState(false);
   const [mostrarInputCertificacion, setMostrarInputCertificacion] = useState(false);
-  // ===============================================
 
   const isMyProfile = user?.rol_id === 2 && user?.id === parseInt(targetId); 
 
-  // ===============================================
-  // UTILIDADES Y HANDLERS (DEFINIDOS AQUÍ PARA EL SCOPE)
-  // ===============================================
-  const updateField = (field, value) => {
-    setPerfilTemp({ ...perfilTemp, [field]: value });
+  // --- HANDLERS ---
+  const updateField = (field, value) => { setPerfilTemp({ ...perfilTemp, [field]: value }); };
+  
+  const handleTarifaChange = (e) => { 
+    const value = e.target.value.replace(/[^0-9.]/g, ''); 
+    if (value === '' || /^\d*\.?\d{0,2}$/.test(value)) setPerfilTemp({ ...perfilTemp, tarifa: value }); 
+  };
+  
+  const handleImageUpload = (e) => { 
+    const file = e.target.files[0]; 
+    if (file) { 
+      const reader = new FileReader(); 
+      reader.onloadend = () => { updateField('foto', reader.result); }; 
+      reader.readAsDataURL(file); 
+    } 
   };
 
-  const handleTarifaChange = (e) => {
-    const value = e.target.value.replace(/[^0-9.]/g, '');
-    if (value === '' || /^\d*\.?\d{0,2}$/.test(value)) {
-      setPerfilTemp({ ...perfilTemp, tarifa: value });
-    }
-  };
+  // Arrays
+  const addExperiencia = () => { setPerfilTemp({ ...perfilTemp, experiencia: [...perfilTemp.experiencia, { puesto: "", periodo: "", descripcion: "" }] }); };
+  const updateExperiencia = (index, field, value) => { const newExp = [...perfilTemp.experiencia]; newExp[index][field] = value; setPerfilTemp({ ...perfilTemp, experiencia: newExp }); };
+  const deleteExperiencia = (index) => { const newExp = perfilTemp.experiencia.filter((_, i) => i !== index); setPerfilTemp({ ...perfilTemp, experiencia: newExp }); };
+  
+  const addHabilidad = () => { if (nuevaHabilidad.trim() && !perfilTemp.habilidades.includes(nuevaHabilidad.trim())) { setPerfilTemp({ ...perfilTemp, habilidades: [...perfilTemp.habilidades, nuevaHabilidad.trim()] }); setNuevaHabilidad(''); setMostrarInputHabilidad(false); } };
+  const deleteHabilidad = (index) => { const newHab = perfilTemp.habilidades.filter((_, i) => i !== index); setPerfilTemp({ ...perfilTemp, habilidades: newHab }); };
+  
+  const addCertificacion = () => { if (nuevaCertificacion.trim()) { setPerfilTemp({ ...perfilTemp, certificaciones: [...perfilTemp.certificaciones, nuevaCertificacion.trim()] }); setNuevaCertificacion(''); setMostrarInputCertificacion(false); } };
+  const deleteCertificacion = (index) => { const newCert = perfilTemp.certificaciones.filter((_, i) => i !== index); setPerfilTemp({ ...perfilTemp, certificaciones: newCert }); };
+  
+  const addProyecto = () => { setPerfilTemp({ ...perfilTemp, proyectos: [...perfilTemp.proyectos, { titulo: "", fecha: "", descripcion: "" }] }); };
+  const updateProyecto = (index, field, value) => { const newProj = [...perfilTemp.proyectos]; newProj[index][field] = value; setPerfilTemp({ ...perfilTemp, proyectos: newProj }); };
+  const deleteProyecto = (index) => { const newProj = perfilTemp.proyectos.filter((_, i) => i !== index); setPerfilTemp({ ...perfilTemp, proyectos: newProj }); };
 
-  const handleImageUpload = (e) => { // <--- FUNCIÓN CORREGIDA
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        updateField('foto', reader.result);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const addExperiencia = () => {
-    setPerfilTemp({ ...perfilTemp, experiencia: [...perfilTemp.experiencia, { puesto: "", periodo: "", descripcion: "" }] });
-  };
-  const updateExperiencia = (index, field, value) => {
-    const newExp = [...perfilTemp.experiencia];
-    newExp[index][field] = value;
-    setPerfilTemp({ ...perfilTemp, experiencia: newExp });
-  };
-  const deleteExperiencia = (index) => {
-    const newExp = perfilTemp.experiencia.filter((_, i) => i !== index);
-    setPerfilTemp({ ...perfilTemp, experiencia: newExp });
-  };
-
-  const addHabilidad = () => {
-    if (nuevaHabilidad.trim() && !perfilTemp.habilidades.includes(nuevaHabilidad.trim())) {
-      setPerfilTemp({ ...perfilTemp, habilidades: [...perfilTemp.habilidades, nuevaHabilidad.trim()] });
-      setNuevaHabilidad('');
-      setMostrarInputHabilidad(false);
-    }
-  };
-
-  const deleteHabilidad = (index) => {
-    const newHab = perfilTemp.habilidades.filter((_, i) => i !== index);
-    setPerfilTemp({ ...perfilTemp, habilidades: newHab });
-  };
-
-  const addCertificacion = () => {
-    if (nuevaCertificacion.trim()) {
-      setPerfilTemp({ ...perfilTemp, certificaciones: [...perfilTemp.certificaciones, nuevaCertificacion.trim()] });
-      setNuevaCertificacion('');
-      setMostrarInputCertificacion(false);
-    }
-  };
-
-  const deleteCertificacion = (index) => {
-    const newCert = perfilTemp.certificaciones.filter((_, i) => i !== index);
-    setPerfilTemp({ ...perfilTemp, certificaciones: newCert });
-  };
-
-  const addProyecto = () => {
-    setPerfilTemp({ ...perfilTemp, proyectos: [...perfilTemp.proyectos, { titulo: "", descripcion: "", fecha: "" }] });
-  };
-
-  const updateProyecto = (index, field, value) => {
-    const newProj = [...perfilTemp.proyectos];
-    newProj[index][field] = value;
-    setPerfilTemp({ ...perfilTemp, proyectos: newProj });
-  };
-
-  const deleteProyecto = (index) => {
-    const newProj = perfilTemp.proyectos.filter((_, i) => i !== index);
-    setPerfilTemp({ ...perfilTemp, proyectos: newProj });
-  };
-  // ===============================================
-
-  useEffect(() => {
-    // Si se usa en modo edición, forzar la pestaña de detalles
-    if (editingMode) {
-        setActiveTab('sobre-mi');
-        setIsEditing(true);
+  // --- LÓGICA WHATSAPP CORREGIDA ---
+  
+  // Función auxiliar para formatear el número
+  const formatForWhatsApp = (phone) => {
+    if (!phone) return '';
+    // 1. Quitar todo lo que no sea número (espacios, guiones, paréntesis, +)
+    let cleaned = phone.replace(/\D/g, '');
+    
+    // 2. Si el número tiene 8 dígitos (formato local SV), agregarle 503
+    if (cleaned.length === 8) {
+        return `503${cleaned}`;
     }
     
-    // Si no hay targetId, no hacer fetch (ej: error 404)
-    if (!targetId) {
-        setLoading(false);
-        setError('ID de perfil no especificado.');
-        return;
-    }
+    // 3. Si ya empieza con 503 (11 dígitos), dejarlo así.
+    // O si es otro número internacional, asumimos que está bien.
+    return cleaned;
+  };
 
-    const fetchData = async () => {
-      try {
-        const [profResponse, reviewResponse] = await Promise.all([
-          professionalAPI.getById(targetId),
-          reviewAPI.getByProfessional(targetId)
-        ]);
+  const handleOpenRequest = (service = null) => {
+    if (!user) { navigate('/login', { state: { message: 'Inicia sesión para solicitar un servicio.' } }); return; }
+    setSelectedService(service); setRequestDetails(''); setShowRequestModal(true);
+  };
 
-        const profileData = profResponse.data;
-        const reviewsData = reviewResponse.data.reviews || [];
-
-        // Mapear BE data
-        const mappedProfile = {
-            id: profileData.usuario_id,
-            perfil_id: profileData.perfil_id,
-            nombre: `${profileData.nombre} ${profileData.apellido}`,
-            titulo: profileData.titulo,
-            ubicacion: profileData.ubicacion,
-            foto: profileData.foto_perfil || `https://api.dicebear.com/7.x/initials/svg?seed=${profileData.nombre}+${profileData.apellido}`,
-            calificacion: profileData.calificacion_promedio,
-            resenas: profileData.total_resenas,
-            verificado: profileData.verificado,
-            miembro_desde: new Date(profileData.fecha_registro).getFullYear().toString(),
-            tarifa: profileData.tarifa_por_hora,
-            email: profileData.email,
-            telefono: profileData.telefono,
-            sobre_mi: profileData.descripcion,
-            experiencia: profileData.experiencias || [],
-            habilidades: (profileData.habilidades || []).map(h => h.nombre),
-            certificaciones: (profileData.certificaciones || []).map(c => c.nombre),
-            proyectos: profileData.proyectos || [],
-        };
-
-        setPerfil(mappedProfile);
-        setPerfilTemp(mappedProfile);
-        setReviews(reviewsData.map(r => ({
-            nombre: `${r.calificador_nombre} ${r.calificador_apellido}`,
-            fecha: new Date(r.createdAt).toLocaleDateString('es-ES'),
-            calificacion: r.calificacion,
-            comentario: r.comentario
-        })));
+  const handleSubmitRequest = async () => {
+    if (!requestDetails.trim()) { alert("Por favor, describe brevemente qué necesitas."); return; }
+    try {
+        await bookingAPI.create({ 
+            profesional_id: perfil.perfil_id, 
+            servicio_id: selectedService ? selectedService.id : null, 
+            titulo_trabajo: selectedService ? selectedService.titulo : `Contacto General: ${perfil.titulo}`, 
+            monto_acordado: selectedService ? selectedService.precio : 0, 
+            detalles: requestDetails 
+        });
+        await contactAPI.register({ profesional_id: perfil.perfil_id });
         
-      } catch (err) {
-        console.error('Error fetching professional profile:', err);
-        if (err && err.message && err.message.includes('404')) {
-             setError('Perfil no encontrado');
+        // USAMOS LA FUNCIÓN DE FORMATEO AQUÍ
+        const whatsappNumber = formatForWhatsApp(perfil.telefono);
+        
+        if (whatsappNumber) {
+            let message = `👋 Hola ${perfil.nombre}, te contacto desde TEKIT.\n\n`;
+            if (selectedService) {
+                message += `📌 *Servicio:* ${selectedService.titulo}\n💰 *Precio:* $${selectedService.precio}\n`;
+            } else {
+                message += `📌 *Motivo:* Consulta general\n`;
+            }
+            message += `📝 *Detalle:* ${requestDetails}`;
+            
+            window.open(`https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`, '_blank');
         } else {
-            setError(err.message || 'No se pudo cargar el perfil profesional.');
+            alert('Solicitud guardada, pero el profesional no tiene un número válido registrado.');
         }
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchData();
-  }, [targetId, user, editingMode]); 
-
-  // ... (Conditional returns for loading/error remain)
-  if (loading) {
-    return (
-        <div className="min-vh-100 d-flex align-items-center justify-content-center">
-            <Spinner animation="border" variant="primary" />
-            <span className="visually-hidden">Cargando perfil...</span>
-        </div>
-    );
-  }
-
-  if (error || !perfil) {
-    if (editingMode) {
-        return <Alert variant="warning">Aún no tienes un perfil público completo. Completa los campos para publicarlo.</Alert>;
-    }
-    return <NotFound />;
-  }
-
-  // Lógica de edición
-  const handleEdit = () => {
-    if (isMyProfile) {
-        setPerfilTemp({...perfil});
-        setIsEditing(true);
-    } else {
-        alert('Solo puedes editar tu propio perfil.');
+        
+        setShowRequestModal(false);
+        setToastMessage('Solicitud enviada con éxito'); setToastVariant('success'); setShowToast(true);
+    } catch (err) {
+        console.error(err); setToastMessage('Error al enviar solicitud'); setToastVariant('danger'); setShowToast(true);
     }
   };
+
+  const handleEdit = () => { if (isMyProfile) { setPerfilTemp({...perfil}); setIsEditing(true); } };
 
   const handleSave = async () => {
-    if (!perfilTemp.nombre.trim() || !perfilTemp.titulo.trim() || !perfilTemp.ubicacion.trim()) {
-      alert('Los campos Nombre, Título y Ubicación son obligatorios');
-      return;
+    if (!perfilTemp.titulo || !perfilTemp.ubicacion) {
+        setToastMessage('Categoría y Ubicación son obligatorios'); setToastVariant('warning'); setShowToast(true); return;
     }
-
-    // Preparar datos para API
+  
     const nombreCompleto = perfilTemp.nombre.trim();
-    const partesNombre = nombreCompleto.split(/\s+/);
-    const firstName = partesNombre[0];
-    const lastName = partesNombre.length > 1 ? partesNombre.slice(1).join(' ') : '';
-    
+    const primerEspacio = nombreCompleto.indexOf(' ');
+    let nombreUser = nombreCompleto;
+    let apellidoUser = '';
+    if (primerEspacio !== -1) { nombreUser = nombreCompleto.substring(0, primerEspacio); apellidoUser = nombreCompleto.substring(primerEspacio + 1); }
+  
     const profileUpdates = {
         titulo: perfilTemp.titulo,
         descripcion: perfilTemp.sobre_mi,
         ubicacion: perfilTemp.ubicacion,
         tarifa_por_hora: parseFloat(perfilTemp.tarifa) || 0,
+        experiencias: perfilTemp.experiencia,
+        habilidades: perfilTemp.habilidades,
+        certificaciones: perfilTemp.certificaciones,
+        proyectos: perfilTemp.proyectos
     };
     
     const userUpdates = {
-        nombre: firstName,
-        apellido: lastName,
-        telefono: perfilTemp.telefono,
+        nombre: nombreUser,
+        apellido: apellidoUser,
+        telefono: perfilTemp.telefono, 
         foto_perfil: perfilTemp.foto 
     };
-
+  
     try {
         await professionalAPI.updateProfile(profileUpdates); 
-        await authAPI.updateProfile(userUpdates); 
-        await updateAuthProfile(); 
-
-        const updatedPerfil = { ...perfilTemp, nombre: nombreCompleto };
-        setPerfil(updatedPerfil);
-        setPerfilTemp(updatedPerfil);
+        await updateAuthProfile(userUpdates); 
+        setPerfil(perfilTemp);
         setIsEditing(false);
-
+        setToastMessage('Perfil actualizado correctamente'); setToastVariant('success'); setShowToast(true);
     } catch (apiError) {
-        alert(`Error al guardar: ${apiError.message || apiError.data?.message || 'Error desconocido'}`);
+        console.error("Error:", apiError);
+        setToastMessage('Error al guardar cambios'); setToastVariant('danger'); setShowToast(true);
     }
-  };
-
-  const handleCancel = () => {
-    setPerfilTemp({...perfil});
-    setIsEditing(false);
   };
   
-  const handleContact = () => {
-    if (!user) {
-        navigate('/login', { state: { message: 'Inicia sesión para contactar a este profesional.' } });
-        return;
-    }
-    
-    const whatsappNumber = perfil.telefono ? perfil.telefono.replace(/\s|-/g, '') : '';
-    if (whatsappNumber) {
-        const whatsappUrl = `https://wa.me/${whatsappNumber}?text=Hola, estoy interesado en tus servicios de ${perfil.titulo} en TEKIT.`;
-        window.open(whatsappUrl, '_blank');
-    } else {
-        alert('Este profesional no tiene un número de teléfono de contacto registrado.');
-    }
-  };
+  const handleCancel = () => { setPerfilTemp({...perfil}); setIsEditing(false); };
 
-  const renderStars = (rating) => {
-    const roundedRating = Math.round(rating || 0)
-    return (
-      <div className="d-flex align-items-center gap-1">
-        {[...Array(5)].map((_, i) => (
-          <Star
-            key={i}
-            className={`star-icon ${
-              i < roundedRating
-                ? 'star-filled'
-                : 'star-empty'
-            }`}
-          />
-        ))}
-      </div>
-    );
-  };
+  // --- EFECTOS ---
+  useEffect(() => {
+    if (editingMode) { setActiveTab('sobre-mi'); setIsEditing(true); }
+    if (!targetId) { setLoading(false); return; }
+
+    const fetchData = async () => {
+      try {
+        const [profResponse, reviewResponse, catResponse, locResponse, serviceResponse] = await Promise.all([
+          professionalAPI.getById(targetId), reviewAPI.getByProfessional(targetId), categoryAPI.getAll(), locationAPI.getAll(), serviceAPI.getByProfessional(targetId)
+        ]);
+        setCategoriesList(catResponse.data || []); setLocationsList(locResponse.data || []); setServices(serviceResponse.data || []);
+        const pData = profResponse.data;
+        const mapped = {
+            id: pData.usuario_id, perfil_id: pData.perfil_id, nombre: `${pData.nombre} ${pData.apellido}`, titulo: pData.titulo, ubicacion: pData.ubicacion, foto: pData.foto_perfil || `https://api.dicebear.com/7.x/initials/svg?seed=${pData.nombre}`, calificacion: pData.calificacion_promedio, resenas: pData.total_resenas, verificado: pData.verificado, miembro_desde: new Date(pData.fecha_registro).getFullYear().toString(), tarifa: pData.tarifa_por_hora, email: pData.email, telefono: pData.telefono, sobre_mi: pData.descripcion, experiencia: pData.experiencias || [], habilidades: (pData.habilidades || []).map(h => h.nombre), certificaciones: (pData.certificaciones || []).map(c => c.nombre), proyectos: pData.proyectos || []
+        };
+        setPerfil(mapped); setPerfilTemp(mapped); setReviews(reviewResponse.data.reviews || []);
+      } catch (err) {
+        if (err.response?.status === 404) setError('Perfil no encontrado'); else setError('Error de conexión');
+      } finally { setLoading(false); }
+    };
+    fetchData();
+  }, [targetId, user, editingMode]); 
+
+  const renderStars = (rating) => (<div className="d-flex align-items-center gap-1">{[...Array(5)].map((_, i) => (<Star key={i} size={14} className={i < Math.round(rating||0) ? 'text-warning fill-warning' : 'text-muted'} fill={i < Math.round(rating||0) ? 'currentColor' : 'none'} />))}</div>);
+
+  if (loading) return <div className="min-vh-100 d-flex align-items-center justify-content-center"><Spinner animation="border" variant="primary" /></div>;
+  if (error || !perfil) return editingMode ? <Alert variant="warning">Completa tu perfil.</Alert> : <NotFound />;
 
   const currentPerfil = isEditing ? perfilTemp : perfil;
 
   return (
-    <div className="perfil-contratante">
+    <div className="perfil-contratante position-relative">
+        {/* TOAST CONTAINER */}
+        <ToastContainer position="top-end" className="p-3" style={{zIndex: 9999, position:'fixed', top:'80px', right:'20px'}}>
+            <Toast onClose={()=>setShowToast(false)} show={showToast} delay={3000} autohide bg={toastVariant}>
+                <Toast.Header><strong className="me-auto">Notificación</strong></Toast.Header>
+                <Toast.Body className="text-white">{toastMessage}</Toast.Body>
+            </Toast>
+        </ToastContainer>
+
       <div className="perfil-header">
         <div className="header-gradient"></div>
         <div className="container">
           <div className="perfil-info-container">
             <div className="avatar-section">
               <div className="avatar-wrapper">
-                <img
-                  src={currentPerfil.foto}
-                  alt={currentPerfil.nombre}
-                  className="avatar-image"
-                />
-                {isEditing && (
-                  <label className="avatar-edit-button">
-                    <Camera className="camera-icon" />
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handleImageUpload} 
-                      className="file-input-hidden"
-                    />
-                  </label>
-                )}
+                <img src={currentPerfil.foto} alt={currentPerfil.nombre} className="avatar-image" />
+                {isEditing && (<label className="avatar-edit-button"><Camera className="camera-icon" /><input type="file" accept="image/*" onChange={handleImageUpload} className="file-input-hidden" /></label>)}
               </div>
             </div>
-
             <div className="info-section">
               <div className="info-content">
                 <div className="info-main">
                   {isEditing ? (
                     <div className="edit-fields">
-                      <input
-                        type="text"
-                        value={currentPerfil.nombre}
-                        onChange={(e) => updateField('nombre', e.target.value)}
-                        className="input-nombre"
-                        placeholder="Nombre completo"
-                      />
-                      <input
-                        type="text"
-                        value={currentPerfil.titulo}
-                        onChange={(e) => updateField('titulo', e.target.value)}
-                        className="input-titulo"
-                        placeholder="Título profesional"
-                      />
-                      <input
-                        type="text"
-                        value={currentPerfil.ubicacion}
-                        onChange={(e) => updateField('ubicacion', e.target.value)}
-                        className="input-ubicacion"
-                        placeholder="Ubicación"
-                      />
+                      <input type="text" value={currentPerfil.nombre} className="input-nombre" disabled />
+                      <Form.Select value={currentPerfil.titulo} onChange={(e) => updateField('titulo', e.target.value)} className="input-titulo mb-2"><option value="">Categoría...</option>{categoriesList.map(c => <option key={c.id} value={c.nombre}>{c.nombre}</option>)}</Form.Select>
+                      <Form.Select value={currentPerfil.ubicacion} onChange={(e) => updateField('ubicacion', e.target.value)} className="input-ubicacion"><option value="">Ubicación...</option>{locationsList.map(l => <option key={l.id} value={l.nombre}>{l.nombre}</option>)}</Form.Select>
                     </div>
                   ) : (
                     <>
-                      <div className="nombre-container">
-                        <h1 className="nombre">{currentPerfil.nombre}</h1>
-                        {currentPerfil.verificado && (
-                          <Award className="badge-verificado" />
-                        )}
-                      </div>
+                      <div className="nombre-container"><h1 className="nombre">{currentPerfil.nombre}</h1>{currentPerfil.verificado && <Award className="badge-verificado" />}</div>
                       <p className="titulo">{currentPerfil.titulo}</p>
-                      <div className="metadata">
-                        <div className="metadata-item">
-                          <MapPin className="metadata-icon" />
-                          {currentPerfil.ubicacion}
-                        </div>
-                        <div className="metadata-item">
-                          <Calendar className="metadata-icon" />
-                          Miembro desde {currentPerfil.miembro_desde}
-                        </div>
-                      </div>
-                      <div className="rating-container">
-                        {renderStars(currentPerfil.calificacion)}
-                        <span className="rating-number">{currentPerfil.calificacion ? currentPerfil.calificacion.toFixed(1) : '0.0'}</span>
-                        <span className="rating-reviews">({currentPerfil.resenas || 0} reseñas)</span>
-                      </div>
+                      <div className="metadata"><span className="metadata-item"><MapPin size={14}/> {currentPerfil.ubicacion}</span><span className="metadata-item"><Calendar size={14}/> Desde {currentPerfil.miembro_desde}</span></div>
+                      <div className="rating-container">{renderStars(currentPerfil.calificacion)}<span className="rating-number">{Number(currentPerfil.calificacion).toFixed(1)}</span><span>({currentPerfil.resenas} reseñas)</span></div>
                     </>
                   )}
                 </div>
-
                 <div className="info-actions">
                   {isEditing ? (
                     <div className="edit-actions">
-                      <div className="tarifa-input-container">
-                        <span className="tarifa-symbol">$</span>
-                        <input
-                          type="text"
-                          value={currentPerfil.tarifa}
-                          onChange={handleTarifaChange}
-                          className="input-tarifa"
-                          placeholder="0.00"
-                        />
-                      </div>
-                      <Button
-                        onClick={handleSave}
-                        className="btn btn-save"
-                      >
-                        <Save className="btn-icon" />
-                        Guardar
-                      </Button>
-                      <Button
-                        onClick={handleCancel}
-                        className="btn btn-cancel"
-                      >
-                        <X className="btn-icon" />
-                        Cancelar
-                      </Button>
+                        <div className="tarifa-input-container"><span className="tarifa-symbol">$</span><input type="text" value={currentPerfil.tarifa} onChange={handleTarifaChange} className="input-tarifa" placeholder="0.00" /></div>
+                        <Button onClick={handleSave} className="btn-save"><Save size={16}/> Guardar</Button>
+                        <Button onClick={handleCancel} variant="outline-secondary"><X size={16}/> Cancelar</Button>
                     </div>
                   ) : (
-                    <>
-                      <div className="tarifa-display">
-                        Desde ${currentPerfil.tarifa || '0.00'}
-                      </div>
-                      
-                      {isMyProfile ? (
-                        /* Lógica: Si es MI perfil, muestro el indicador */
-                        <Alert variant="info" className="py-2 px-3 text-center" style={{ fontSize: '0.9rem' }}>
-                            Este es tu perfil público.
-                        </Alert>
-                      ) : (
-                        /* Lógica: Si NO es mi perfil, muestro Contactar */
-                        <>
-                            <Button className="btn btn-contact" onClick={handleContact}>
-                                Contactar
-                            </Button>
-                        </>
-                      )}
-                    </>
+                    <div className="d-flex flex-column align-items-end">
+                        <div className="tarifa-display">Desde ${currentPerfil.tarifa}/hr</div>
+                        {!isMyProfile && <Button className="btn-contact" onClick={() => handleOpenRequest(null)}>Contactar</Button>}
+                    </div>
                   )}
                 </div>
               </div>
@@ -433,20 +272,8 @@ const PerfilContratante = ({ editingMode = false, profileUserId }) => {
       <div className="tabs-container">
         <div className="container">
           <nav className="tabs-nav">
-            {[
-              { id: 'sobre-mi', label: 'Sobre mí' },
-              { id: 'experiencia', label: 'Experiencia' },
-              { id: 'habilidades', label: 'Habilidades' },
-              { id: 'proyectos', label: 'Proyectos' },
-              { id: 'resenas', label: 'Reseñas' }
-            ].map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`tab-button ${activeTab === tab.id ? 'tab-active' : ''}`}
-              >
-                {tab.label}
-              </button>
+            {[{id:'servicios',l:'Servicios'},{id:'sobre-mi',l:'Sobre mí'},{id:'experiencia',l:'Experiencia'},{id:'habilidades',l:'Habilidades'},{id:'proyectos',l:'Proyectos'},{id:'resenas',l:'Reseñas'}].map(t => (
+                <button key={t.id} onClick={() => setActiveTab(t.id)} className={`tab-button ${activeTab === t.id ? 'tab-active' : ''}`}>{t.l}</button>
             ))}
           </nav>
         </div>
@@ -455,393 +282,156 @@ const PerfilContratante = ({ editingMode = false, profileUserId }) => {
       <div className="container content-container">
         <div className="content-grid">
           <div className="main-content">
+            {activeTab === 'servicios' && (
+                <div className="vstack gap-3">
+                    {services.length > 0 ? services.map(s => (
+                        <Card key={s.id} className="border-0 shadow-sm service-card-public">
+                            <Card.Body className="d-flex justify-content-between">
+                                <div>
+                                    <h5 className="fw-bold mb-1">{s.titulo}</h5>
+                                    <Badge bg="light" text="dark" className="mb-2">{s.categoria_nombre}</Badge>
+                                    <p className="text-muted small mb-2">{s.descripcion}</p>
+                                    <div className="fw-bold text-primary">${s.precio} <span className="fw-normal text-muted small">{s.tipo_precio === 'por_hora' ? '/hr' : 'fijo'}</span></div>
+                                </div>
+                                {!isEditing && !isMyProfile && <Button variant="success" size="sm" className="align-self-start" onClick={() => handleOpenRequest(s)}><MessageCircle size={16} className="me-1"/> Me interesa</Button>}
+                            </Card.Body>
+                        </Card>
+                    )) : <div className="text-center py-5 text-muted">Sin servicios publicados.</div>}
+                </div>
+            )}
+
             {activeTab === 'sobre-mi' && (
-              <div className="card">
-                <h2 className="card-title">Sobre mí</h2>
-                {isEditing ? (
-                  <textarea
-                    value={currentPerfil.sobre_mi}
-                    onChange={(e) => updateField('sobre_mi', e.target.value)}
-                    className="textarea-sobre-mi"
-                    placeholder="Describe tu experiencia y especialización..."
-                  />
-                ) : (
-                  <p className="card-text">{currentPerfil.sobre_mi}</p>
-                )}
-                {currentPerfil.sobre_mi.length === 0 && !isEditing && (
-                    <p className="text-muted fst-italic">Este profesional aún no ha escrito una descripción.</p>
-                )}
-              </div>
+              <Card className="border-0 shadow-sm p-4">
+                <h5 className="fw-bold mb-3">Sobre mí</h5>
+                {isEditing ? <Form.Control as="textarea" rows={5} value={currentPerfil.sobre_mi} onChange={(e)=>updateField('sobre_mi', e.target.value)} /> : <p>{currentPerfil.sobre_mi || 'Sin descripción.'}</p>}
+              </Card>
             )}
 
             {activeTab === 'experiencia' && (
-              <div className="card">
-                <div className="card-header">
-                  <h2 className="card-title">Experiencia Laboral</h2>
-                  {isEditing && (
-                    <Button
-                      onClick={addExperiencia}
-                      className="btn-add"
-                    >
-                      <Plus className="btn-icon-small" />
-                      Agregar
-                    </Button>
-                  )}
-                </div>
-                <div className="experiencia-list">
-                  {currentPerfil.experiencia.length > 0 ? currentPerfil.experiencia.map((exp, index) => (
-                    <div key={index} className="experiencia-item">
-                      <div className="experiencia-icon">
-                        <Briefcase className="icon" />
-                      </div>
-                      <div className="experiencia-content">
+              <Card className="border-0 shadow-sm p-4">
+                <div className="d-flex justify-content-between mb-3"><h5 className="fw-bold">Experiencia</h5>{isEditing && <Button size="sm" onClick={addExperiencia}><Plus size={16}/> Agregar</Button>}</div>
+                {currentPerfil.experiencia.map((exp, i) => (
+                    <div key={i} className="mb-4 border-bottom pb-3 last-no-border">
                         {isEditing ? (
-                          <div className="edit-experiencia">
-                            <div className="edit-row">
-                              <input
-                                type="text"
-                                value={exp.puesto}
-                                onChange={(e) => updateExperiencia(index, 'puesto', e.target.value)}
-                                className="input-field"
-                                placeholder="Puesto"
-                              />
-                              <Button
-                                onClick={() => deleteExperiencia(index)}
-                                className="btn-delete"
-                              >
-                                <Trash2 className="icon-delete" />
-                              </Button>
+                            <div className="vstack gap-2">
+                                <Form.Control placeholder="Puesto / Rol" value={exp.puesto} onChange={(e)=>updateExperiencia(i,'puesto',e.target.value)} className="fw-bold"/>
+                                <Form.Control placeholder="Periodo (Ej: 2020-2022)" value={exp.periodo} onChange={(e)=>updateExperiencia(i,'periodo',e.target.value)}/>
+                                <Form.Control as="textarea" placeholder="Descripción..." value={exp.descripcion} onChange={(e)=>updateExperiencia(i,'descripcion',e.target.value)}/>
+                                <Button variant="outline-danger" size="sm" onClick={()=>deleteExperiencia(i)}>Eliminar</Button>
                             </div>
-                            <input
-                              type="text"
-                              value={exp.periodo}
-                              onChange={(e) => updateExperiencia(index, 'periodo', e.target.value)}
-                              className="input-field"
-                              placeholder="Periodo (ej: 2020 - Presente)"
-                            />
-                            <textarea
-                              value={exp.descripcion}
-                              onChange={(e) => updateExperiencia(index, 'descripcion', e.target.value)}
-                              className="textarea-field"
-                              placeholder="Descripción del puesto..."
-                            />
-                          </div>
                         ) : (
-                          <>
-                            <h3 className="experiencia-puesto">{exp.puesto}</h3>
-                            <div className="experiencia-periodo">
-                              <Clock className="periodo-icon" />
-                              {exp.periodo}
-                            </div>
-                            <p className="experiencia-descripcion">{exp.descripcion}</p>
-                          </>
+                            <>
+                                <h6 className="fw-bold mb-1">{exp.puesto}</h6>
+                                <div className="text-muted small mb-2"><Clock size={14}/> {exp.periodo}</div>
+                                <p className="mb-0 small">{exp.descripcion}</p>
+                            </>
                         )}
-                      </div>
                     </div>
-                  )) : (
-                    <p className="text-muted fst-italic text-center">Sin experiencia registrada.</p>
-                  )}
-                </div>
-              </div>
+                ))}
+              </Card>
             )}
 
             {activeTab === 'habilidades' && (
-              <div className="card">
-                <div className="card-header">
-                  <h2 className="card-title">Habilidades</h2>
-                  {isEditing && (
-                    <Button
-                      onClick={() => setMostrarInputHabilidad(!mostrarInputHabilidad)}
-                      className="btn-add"
-                    >
-                      <Plus className="btn-icon-small" />
-                      Agregar
-                    </Button>
-                  )}
+              <Card className="border-0 shadow-sm p-4">
+                <div className="d-flex justify-content-between mb-3"><h5 className="fw-bold">Habilidades</h5>{isEditing && <Button size="sm" onClick={()=>setMostrarInputHabilidad(!mostrarInputHabilidad)}><Plus size={16}/></Button>}</div>
+                {isEditing && mostrarInputHabilidad && <div className="d-flex gap-2 mb-3"><Form.Control placeholder="Nueva habilidad" value={nuevaHabilidad} onChange={(e)=>setNuevaHabilidad(e.target.value)} /><Button onClick={addHabilidad}>OK</Button></div>}
+                <div className="d-flex flex-wrap gap-2 mb-4">
+                    {currentPerfil.habilidades.map((h,i) => (
+                        <Badge key={i} bg="light" text="dark" className="p-2 border d-flex align-items-center gap-2">
+                            {h} {isEditing && <X size={14} style={{cursor:'pointer'}} onClick={()=>deleteHabilidad(i)}/>}
+                        </Badge>
+                    ))}
                 </div>
-
-                {isEditing && mostrarInputHabilidad && (
-                  <div className="add-input-container">
-                    <input
-                      type="text"
-                      value={nuevaHabilidad}
-                      onChange={(e) => setNuevaHabilidad(e.target.value)}
-                      onKeyPress={(e) => e.key === 'Enter' && addHabilidad()}
-                      className="input-add"
-                      placeholder="Escribe una habilidad..."
-                      autoFocus
-                    />
-                    <Button
-                      onClick={addHabilidad}
-                      className="btn-confirm"
-                    >
-                      <Plus className="btn-icon-small" />
-                    </Button>
-                    <Button
-                      onClick={() => {
-                        setMostrarInputHabilidad(false);
-                        setNuevaHabilidad('');
-                      }}
-                      className="btn-cancel-add"
-                    >
-                      <X className="btn-icon-small" />
-                    </Button>
-                  </div>
-                )}
-
-                <div className="habilidades-grid">
-                  {currentPerfil.habilidades.length > 0 ? currentPerfil.habilidades.map((habilidad, index) => (
-                    <span
-                      key={index}
-                      className="habilidad-tag"
-                    >
-                      {habilidad}
-                      {isEditing && (
-                        <button
-                          onClick={() => deleteHabilidad(index)}
-                          className="habilidad-delete"
-                        >
-                          <X className="icon-small" />
-                        </button>
-                      )}
-                    </span>
-                  )) : (
-                    <p className="text-muted fst-italic w-100 text-center">Sin habilidades registradas.</p>
-                  )}
-                </div>
-
-                <div className="certificaciones-section">
-                  <div className="card-header">
-                    <h3 className="section-subtitle">Certificaciones</h3>
-                    {isEditing && (
-                      <Button
-                        onClick={() => setMostrarInputCertificacion(!mostrarInputCertificacion)}
-                        className="btn-add"
-                      >
-                        <Plus className="btn-icon-small" />
-                        Agregar
-                      </Button>
-                    )}
-                  </div>
-
-                  {isEditing && mostrarInputCertificacion && (
-                    <div className="add-input-container">
-                      <input
-                        type="text"
-                        value={nuevaCertificacion}
-                        onChange={(e) => setNuevaCertificacion(e.target.value)}
-                        onKeyPress={(e) => e.key === 'Enter' && addCertificacion()}
-                        className="input-add"
-                        placeholder="Escribe una certificación..."
-                        autoFocus
-                      />
-                      <Button
-                        onClick={addCertificacion}
-                        className="btn-confirm"
-                      >
-                        <Plus className="btn-icon-small" />
-                      </Button>
-                      <Button
-                        onClick={() => {
-                          setMostrarInputCertificacion(false);
-                          setNuevaCertificacion('');
-                        }}
-                        className="btn-cancel-add"
-                      >
-                        <X className="btn-icon-small" />
-                      </Button>
-                    </div>
-                  )}
-
-                  <ul className="certificaciones-list">
-                    {currentPerfil.certificaciones.length > 0 ? currentPerfil.certificaciones.map((cert, index) => (
-                      <li key={index} className="certificacion-item">
-                        <div className="certificacion-content">
-                          <Award className="certificacion-icon" />
-                          {cert}
-                        </div>
-                        {isEditing && (
-                          <Button
-                            onClick={() => deleteCertificacion(index)}
-                            className="btn-delete-cert"
-                          >
-                            <Trash2 className="icon-delete" />
-                          </Button>
-                        )}
-                      </li>
-                    )) : (
-                        <p className="text-muted fst-italic">Sin certificaciones registradas.</p>
-                    )}
-                  </ul>
-                </div>
-              </div>
+                <div className="d-flex justify-content-between mb-3"><h5 className="fw-bold">Certificaciones</h5>{isEditing && <Button size="sm" onClick={()=>setMostrarInputCertificacion(!mostrarInputCertificacion)}><Plus size={16}/></Button>}</div>
+                {isEditing && mostrarInputCertificacion && <div className="d-flex gap-2 mb-3"><Form.Control placeholder="Nueva certificación" value={nuevaCertificacion} onChange={(e)=>setNuevaCertificacion(e.target.value)} /><Button onClick={addCertificacion}>OK</Button></div>}
+                <ul className="list-unstyled">
+                    {currentPerfil.certificaciones.map((c,i) => (
+                        <li key={i} className="mb-2 d-flex align-items-center gap-2"><Award size={16} className="text-primary"/> {c} {isEditing && <Button variant="link" size="sm" className="text-danger p-0" onClick={()=>deleteCertificacion(i)}><X size={16}/></Button>}</li>
+                    ))}
+                </ul>
+              </Card>
             )}
 
+            {/* PROYECTOS (CON 3 CAMPOS) */}
             {activeTab === 'proyectos' && (
-              <div className="card">
-                <div className="card-header">
-                  <h2 className="card-title">Proyectos Destacados</h2>
-                  {isEditing && (
-                    <Button
-                      onClick={addProyecto}
-                      className="btn-add"
-                    >
-                      <Plus className="btn-icon-small" />
-                      Agregar
-                    </Button>
-                  )}
-                </div>
-                <div className="proyectos-list">
-                  {currentPerfil.proyectos.length > 0 ? currentPerfil.proyectos.map((proyecto, index) => (
-                    <div key={index} className="proyecto-card">
-                      {isEditing ? (
-                        <div className="edit-proyecto">
-                          <div className="edit-row">
-                            <input
-                              type="text"
-                              value={proyecto.titulo}
-                              onChange={(e) => updateProyecto(index, 'titulo', e.target.value)}
-                              className="input-proyecto-titulo"
-                              placeholder="Título del proyecto"
-                            />
-                            <input
-                              type="text"
-                              value={proyecto.fecha}
-                              onChange={(e) => updateProyecto(index, 'fecha', e.target.value)}
-                              className="input-proyecto-fecha"
-                              placeholder="Año"
-                            />
-                            <Button
-                              onClick={() => deleteProyecto(index)}
-                              className="btn-delete"
-                            >
-                              <Trash2 className="icon-delete" />
-                            </Button>
-                          </div>
-                          <textarea
-                            value={proyecto.descripcion}
-                            onChange={(e) => updateProyecto(index, 'descripcion', e.target.value)}
-                            className="textarea-proyecto"
-                            placeholder="Descripción del proyecto..."
-                          />
-                        </div>
-                      ) : (
-                        <>
-                          <div className="proyecto-header">
-                            <h3 className="proyecto-titulo">{proyecto.titulo}</h3>
-                            <span className="proyecto-fecha">{proyecto.fecha}</span>
-                          </div>
-                          <p className="proyecto-descripcion">{proyecto.descripcion}</p>
-                        </>
-                      )}
+              <Card className="border-0 shadow-sm p-4">
+                <div className="d-flex justify-content-between mb-3"><h5 className="fw-bold">Proyectos Destacados</h5>{isEditing && <Button size="sm" onClick={addProyecto}><Plus size={16}/> Agregar</Button>}</div>
+                {currentPerfil.proyectos.map((p, i) => (
+                    <div key={i} className="mb-4 border rounded p-3 bg-light">
+                        {isEditing ? (
+                            <div className="vstack gap-2">
+                                <Form.Control placeholder="Título del proyecto" className="fw-bold" value={p.titulo} onChange={(e)=>updateProyecto(i,'titulo',e.target.value)}/>
+                                <Form.Control placeholder="Año (Ej: 2023)" value={p.fecha} onChange={(e)=>updateProyecto(i,'fecha',e.target.value)}/>
+                                <Form.Control as="textarea" placeholder="Descripción detallada del proyecto..." value={p.descripcion} onChange={(e)=>updateProyecto(i,'descripcion',e.target.value)}/>
+                                <Button variant="outline-danger" size="sm" onClick={()=>deleteProyecto(i)}>Eliminar Proyecto</Button>
+                            </div>
+                        ) : (
+                            <>
+                                <div className="d-flex justify-content-between"><h6 className="fw-bold">{p.titulo}</h6><span className="text-muted small">{p.fecha}</span></div>
+                                <p className="mb-0 small">{p.descripcion}</p>
+                            </>
+                        )}
                     </div>
-                  )) : (
-                    <p className="text-muted fst-italic text-center">Sin proyectos destacados.</p>
-                  )}
-                </div>
-              </div>
+                ))}
+              </Card>
             )}
 
             {activeTab === 'resenas' && (
-              <div className="card">
-                <h2 className="card-title">
-                  Reseñas ({reviews.length})
-                </h2>
-                <div className="resenas-list">
-                  {reviews.length > 0 ? reviews.map((resena, index) => (
-                    <div key={index} className="resena-item">
-                      <div className="resena-content">
-                        <div className="resena-avatar" style={{ background: 'linear-gradient(135deg, #351491 0%, #101728 100%)' }}>
-                          {resena.nombre.charAt(0)}
-                        </div>
-                        <div className="resena-info">
-                          <div className="resena-header">
-                            <div>
-                              <h4 className="resena-nombre">{resena.nombre}</h4>
-                              <p className="resena-fecha">{resena.fecha}</p>
+                <Card className="border-0 shadow-sm p-4">
+                    <h5 className="fw-bold mb-4">Reseñas ({reviews.length})</h5>
+                    {reviews.length > 0 ? reviews.map((r, i) => (
+                        <div key={i} className="mb-3 border-bottom pb-3">
+                            <div className="d-flex justify-content-between">
+                                <h6 className="fw-bold mb-0">{r.calificador_nombre} {r.calificador_apellido}</h6>
+                                <span className="text-muted small">{r.fecha}</span>
                             </div>
-                            {renderStars(resena.calificacion)}
-                          </div>
-                          <p className="resena-comentario">{resena.comentario}</p>
+                            {renderStars(r.calificacion)}
+                            <p className="mt-2 mb-0 small">{r.comentario}</p>
                         </div>
-                      </div>
-                    </div>
-                  )) : (
-                    <p className="text-muted fst-italic text-center">Aún no hay reseñas para este profesional.</p>
-                  )}
-                </div>
-              </div>
+                    )) : <p className="text-muted">Aún no hay reseñas.</p>}
+                </Card>
             )}
           </div>
 
           <div className="sidebar-content">
             <div className="card sidebar-card">
               <h3 className="card-title-small">Información de Contacto</h3>
-              {isEditing ? (
-                <div className="contacto-edit">
-                  <div className="contacto-field">
-                    <label className="contacto-label">
-                      <Mail className="label-icon" />
-                      Email
-                    </label>
-                    <input
-                      type="email"
-                      value={currentPerfil.email}
-                      onChange={(e) => updateField('email', e.target.value)}
-                      className="input-contacto"
-                      placeholder="Email"
-                      disabled 
-                    />
-                  </div>
-                  <div className="contacto-field">
-                    <label className="contacto-label">
-                      <Phone className="label-icon" />
-                      Teléfono
-                    </label>
-                    <input
-                      type="tel"
-                      value={currentPerfil.telefono}
-                      onChange={(e) => updateField('telefono', e.target.value)}
-                      className="input-contacto"
-                      placeholder="Teléfono"
-                    />
-                  </div>
-                </div>
-              ) : (
-                <div className="contacto-info">
-                  <div className="contacto-item">
-                    <Mail className="contacto-icon" />
-                    <span className="contacto-text">{currentPerfil.email}</span>
-                  </div>
-                  <div className="contacto-item">
+              <div className="contacto-info">
+                <div className="contacto-item"><Mail className="contacto-icon" /><span className="contacto-text">{currentPerfil.email}</span></div>
+                <div className="contacto-item">
                     <Phone className="contacto-icon" />
-                    <span className="contacto-text">{currentPerfil.telefono}</span>
-                  </div>
+                    {isEditing ? (
+                        <Form.Control 
+                            type="tel" 
+                            value={currentPerfil.telefono || ''} 
+                            onChange={(e) => updateField('telefono', e.target.value)}
+                            placeholder="Ej: 7123-4567"
+                            className="py-1 px-2"
+                            style={{ fontSize: '0.9rem' }}
+                        />
+                    ) : (
+                        <span className="contacto-text">{currentPerfil.telefono || 'Sin teléfono'}</span>
+                    )}
                 </div>
-              )}
-
-              <hr className="divider" />
-
-              <h3 className="card-title-small">Disponibilidad</h3>
-              <div className="disponibilidad-info">
-                <div className="status-indicator"></div>
-                <span>Disponible para nuevos proyectos</span>
               </div>
-
-              {!isEditing && !isMyProfile && (
-                <Button className="btn-mensaje" onClick={handleContact}>
-                  Enviar Mensaje
-                </Button>
-              )}
-               {!isEditing && isMyProfile && (
-                <Alert variant="info" className="mt-3 text-center">
-                    Gestiona tus datos en la pestaña "Mi Cuenta".
-                </Alert>
-              )}
+              <hr className="divider" />
+              <h3 className="card-title-small">Disponibilidad</h3>
+              <div className="disponibilidad-info"><div className="status-indicator"></div><span>Disponible para nuevos proyectos</span></div>
+              {!isEditing && !isMyProfile && (<Button className="btn-mensaje" onClick={() => handleOpenRequest(null)}>Solicitar / Contactar</Button>)}
+              
+              {/* AVISO PERFIL PROPIO RESTAURADO */}
+              {!isEditing && isMyProfile && (<Alert variant="info" className="mt-3 text-center small">Este es tu perfil público.</Alert>)}
+            
             </div>
           </div>
         </div>
       </div>
+
+      <Modal show={showRequestModal} onHide={()=>setShowRequestModal(false)} centered>
+        <Modal.Header closeButton><Modal.Title>{selectedService ? `Solicitar: ${selectedService.titulo}` : `Contactar a ${perfil?.nombre}`}</Modal.Title></Modal.Header>
+        <Modal.Body><Form><Form.Group className="mb-3"><Form.Label>¿Qué necesitas?</Form.Label><Form.Control as="textarea" rows={4} placeholder="Detalles..." value={requestDetails} onChange={(e)=>setRequestDetails(e.target.value)} autoFocus/></Form.Group></Form></Modal.Body>
+        <Modal.Footer><Button variant="secondary" onClick={()=>setShowRequestModal(false)}>Cancelar</Button><Button variant="success" onClick={handleSubmitRequest}><MessageCircle size={18} className="me-2" />Enviar a WhatsApp</Button></Modal.Footer>
+      </Modal>
     </div>
   );
 };

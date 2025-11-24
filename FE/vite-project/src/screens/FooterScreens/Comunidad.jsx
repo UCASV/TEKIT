@@ -17,12 +17,17 @@ function Comunidad() {
 
       <section className="py-5 bg-white text-center min-vh-50 d-flex align-items-center">
         <Container>
-          <h3 className="h3 fw-bold mb-4">¡Próximamente!</h3>
+          <h3 className="h3 fw-bold mb-4">Únete a nuestra red</h3>
           <p className="text-muted lead mb-4">
-            Estamos trabajando arduamente para construir un foro y una sección de recursos para nuestra comunidad de profesionales.
+            Conecta con otros profesionales y clientes en nuestro grupo oficial de WhatsApp.
           </p>
-          <Button variant="primary" size="lg" onClick={() => window.open('https://chat.whatsapp.com', '_blank')}>
-            Únete a nuestro grupo de WhatsApp
+          <Button 
+            variant="success" 
+            size="lg" 
+            onClick={() => window.open('https://chat.whatsapp.com/GoVnJvakD3H0mvTSHymZi3', '_blank')}
+          >
+            <i className="bi bi-whatsapp me-2"></i>
+            Unirme al Grupo de WhatsApp
           </Button>
         </Container>
       </section>

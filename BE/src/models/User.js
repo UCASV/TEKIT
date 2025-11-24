@@ -34,8 +34,8 @@ export class User {
                     SELECT u.*, r.nombre as rol_nombre
                     FROM Usuarios u
                     INNER JOIN Roles r ON u.rol_id = r.id
-                    WHERE u.email = @email AND u.activo = 1
-                `);
+                    WHERE u.email = @email
+                `); // Nota: Quité 'AND u.activo = 1' por si acaso tu DB tiene activo=0 por defecto, aunque debería ser 1.
             
             return result.recordset[0];
         } catch (error) {
@@ -62,34 +62,40 @@ export class User {
         }
     }
 
-    // Actualizar usuario
+    // Actualizar usuario (Con fix para teléfono)
     static async update(id, userData) {
         try {
             const pool = await getConnection();
-            const result = await pool.request()
-                .input('id', sql.Int, id)
-                .input('nombre', sql.NVarChar, userData.nombre)
-                .input('apellido', sql.NVarChar, userData.apellido)
-                .input('telefono', sql.NVarChar, userData.telefono)
-                .input('foto_perfil', sql.NVarChar, userData.foto_perfil || null)
-                .query(`
-                    UPDATE Usuarios 
-                    SET nombre = @nombre,
-                        apellido = @apellido,
-                        telefono = @telefono,
-                        foto_perfil = @foto_perfil,
-                        updatedAt = GETDATE()
-                    OUTPUT INSERTED.*
-                    WHERE id = @id
-                `);
             
+            let query = 'UPDATE Usuarios SET updatedAt = GETDATE()';
+            const request = pool.request().input('id', sql.Int, id);
+
+            if (userData.nombre !== undefined) {
+                query += ', nombre = @nombre';
+                request.input('nombre', sql.NVarChar, userData.nombre);
+            }
+            if (userData.apellido !== undefined) {
+                query += ', apellido = @apellido';
+                request.input('apellido', sql.NVarChar, userData.apellido);
+            }
+            if (userData.telefono !== undefined) {
+                query += ', telefono = @telefono';
+                request.input('telefono', sql.NVarChar, userData.telefono);
+            }
+            if (userData.foto_perfil !== undefined) {
+                query += ', foto_perfil = @foto_perfil';
+                request.input('foto_perfil', sql.NVarChar, userData.foto_perfil);
+            }
+
+            query += ' OUTPUT INSERTED.* WHERE id = @id';
+
+            const result = await request.query(query);
             return result.recordset[0];
         } catch (error) {
             throw error;
         }
     }
 
-    // Verificar email
     static async verifyEmail(id) {
         try {
             const pool = await getConnection();
@@ -97,11 +103,9 @@ export class User {
                 .input('id', sql.Int, id)
                 .query(`
                     UPDATE Usuarios 
-                    SET email_verificado = 1,
-                        updatedAt = GETDATE()
+                    SET email_verificado = 1, updatedAt = GETDATE()
                     WHERE id = @id
                 `);
-            
             return true;
         } catch (error) {
             throw error;

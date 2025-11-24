@@ -1,66 +1,47 @@
-
-// =============================================
-// BE/src/models/Contact.js
-// =============================================
 import { getConnection, sql } from '../config/database.js';
 
 export class Contact {
-    // Registrar contacto via WhatsApp
-    static async register(contactData) {
+    static async register(data) {
         try {
             const pool = await getConnection();
-            const result = await pool.request()
-                .input('cliente_id', sql.Int, contactData.cliente_id)
-                .input('profesional_id', sql.Int, contactData.profesional_id)
+            await pool.request()
+                .input('cliente_id', sql.Int, data.cliente_id)
+                .input('profesional_id', sql.Int, data.profesional_id)
                 .query(`
                     INSERT INTO Contactos_WhatsApp (cliente_id, profesional_id)
-                    OUTPUT INSERTED.*
                     VALUES (@cliente_id, @profesional_id)
                 `);
-            
-            return result.recordset[0];
+            return { success: true };
         } catch (error) {
             throw error;
         }
     }
 
-    // Obtener estadísticas de contactos de un profesional
+    // MODIFICADO: Ahora obtiene estadísticas basadas en CONTRATACIONES (Solicitudes)
     static async getStats(profesional_id) {
         try {
             const pool = await getConnection();
             const result = await pool.request()
-                .input('profesional_id', sql.Int, profesional_id)
+                .input('pid', sql.Int, profesional_id)
                 .query(`
                     SELECT 
-                        COUNT(*) as total_contactos,
-                        COUNT(DISTINCT cliente_id) as clientes_unicos,
-                        COUNT(CASE WHEN DATEDIFF(day, createdAt, GETDATE()) <= 7 THEN 1 END) as contactos_semana,
-                        COUNT(CASE WHEN DATEDIFF(day, createdAt, GETDATE()) <= 30 THEN 1 END) as contactos_mes
-                    FROM Contactos_WhatsApp
-                    WHERE profesional_id = @profesional_id
+                        -- Total de solicitudes recibidas (Histórico)
+                        (SELECT COUNT(*) FROM Contrataciones WHERE profesional_id = @pid) as total_solicitudes,
+                        
+                        -- Solicitudes de esta semana
+                        (SELECT COUNT(*) FROM Contrataciones 
+                         WHERE profesional_id = @pid 
+                         AND fecha_solicitud >= DATEADD(day, -7, GETDATE())) as solicitudes_semana,
+                         
+                        -- Dinero estimado del mes (Solo trabajos COMPLETADOS/ACEPTADOS)
+                        (SELECT ISNULL(SUM(monto_acordado), 0) FROM Contrataciones 
+                         WHERE profesional_id = @pid 
+                         AND estado = 'completado'
+                         AND MONTH(fecha_solicitud) = MONTH(GETDATE()) 
+                         AND YEAR(fecha_solicitud) = YEAR(GETDATE())) as ganancias_mes
                 `);
             
             return result.recordset[0];
-        } catch (error) {
-            throw error;
-        }
-    }
-
-    // Verificar si un cliente ya contactó a un profesional
-    static async hasContacted(cliente_id, profesional_id) {
-        try {
-            const pool = await getConnection();
-            const result = await pool.request()
-                .input('cliente_id', sql.Int, cliente_id)
-                .input('profesional_id', sql.Int, profesional_id)
-                .query(`
-                    SELECT COUNT(*) as total
-                    FROM Contactos_WhatsApp
-                    WHERE cliente_id = @cliente_id 
-                    AND profesional_id = @profesional_id
-                `);
-            
-            return result.recordset[0].total > 0;
         } catch (error) {
             throw error;
         }

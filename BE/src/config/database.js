@@ -1,20 +1,17 @@
-// =============================================
-// BE/src/config/database.js
-// =============================================
 import sql from 'mssql';
 import dotenv from 'dotenv';
 dotenv.config();
-
 
 const config = {
     user: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
     server: process.env.DB_SERVER,
-    database: process.env.DB_DATABASE,
+    database: 'TEKIT2',
     port: parseInt(process.env.DB_PORT || '1433'),
     options: {
-        encrypt: true, // Para Azure
-        trustServerCertificate: true // Para desarrollo local
+        encrypt: true, 
+        trustServerCertificate: true,
+        enableArithAbort: true
     },
     pool: {
         max: 10,
@@ -27,13 +24,28 @@ let pool = null;
 
 export const getConnection = async () => {
     try {
-        if (!pool) {
-            pool = await sql.connect(config);
-            console.log('✅ Conectado a SQL Server');
+        // Si ya existe el pool, verificamos si está conectado
+        if (pool) {
+            if (pool.connected) {
+                return pool;
+            }
+            // Si existe pero no está conectado, intentamos cerrarlo para limpiar
+            try {
+                await pool.close();
+            } catch (e) {
+                console.warn('Aviso: Error cerrando pool antiguo:', e.message);
+            }
+            pool = null;
         }
+
+        // Crear nueva conexión
+        console.log('🔄 Intentando conectar a SQL Server...');
+        pool = await sql.connect(config);
+        console.log('✅ Conectado a SQL Server (TEKIT2)');
         return pool;
+
     } catch (error) {
-        console.error('❌ Error conectando a la BD:', error.message);
+        console.error('❌ Error FATAL de conexión a BD:', error.message);
         throw error;
     }
 };
@@ -51,15 +63,3 @@ export const closeConnection = async () => {
 };
 
 export { sql };
-
-
-
-
-
-
-
-
-
-
-
-

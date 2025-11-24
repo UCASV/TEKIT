@@ -1,81 +1,45 @@
-// =============================================
-// BE/src/app.js - ACTUALIZADO
-// =============================================
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 
+// Importar rutas
 import authRoutes from './routes/authRoutes.js';
 import professionalRoutes from './routes/professionalRoutes.js';
 import categoryRoutes from './routes/categoryRoutes.js';
 import reviewRoutes from './routes/reviewRoutes.js';
 import contactRoutes from './routes/contactRoutes.js';
 import serviceRoutes from './routes/serviceRoutes.js';
+import bookingRoutes from './routes/bookingRoutes.js'; // <--- ¿ESTÁ ESTA LÍNEA?
+import locationRoutes from './routes/locationRoutes.js'; 
 
 dotenv.config();
 
 const app = express();
 
-// Middlewares globales
+// Middlewares
 app.use(cors({
     origin: process.env.FRONTEND_URL || 'http://localhost:5173',
     credentials: true
 }));
-
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Logging middleware en desarrollo
-if (process.env.NODE_ENV === 'development') {
-    app.use((req, res, next) => {
-        console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`);
-        next();
-    });
-}
-
-// Ruta de prueba
-app.get('/', (req, res) => {
-    res.json({
-        message: '🎉 TEKIT API funcionando',
-        version: '1.0.0',
-        timestamp: new Date().toISOString()
-    });
-});
-
-// Ruta de health check
-app.get('/health', (req, res) => {
-    res.json({
-        status: 'OK',
-        uptime: process.uptime(),
-        timestamp: new Date().toISOString()
-    });
-});
-
-// Rutas API
+// Registrar rutas
 app.use('/api/auth', authRoutes);
 app.use('/api/professionals', professionalRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/reviews', reviewRoutes);
 app.use('/api/contacts', contactRoutes);
 app.use('/api/services', serviceRoutes);
+app.use('/api/bookings', bookingRoutes); // <--- ¿Y ESTÁ ESTA LÍNEA?
+app.use('/api/locations', locationRoutes);
 
-// Manejo de rutas no encontradas
-app.use((req, res) => {
-    res.status(404).json({
-        success: false,
-        error: 'Ruta no encontrada',
-        path: req.originalUrl
-    });
-});
+app.get('/', (req, res) => res.json({ message: 'API TEKIT V2 funcionando 🚀' }));
 
-// Manejo de errores global
+// Manejador global de errores
 app.use((err, req, res, next) => {
-    console.error('Error:', err);
-    res.status(err.status || 500).json({
-        success: false,
-        error: err.message || 'Error interno del servidor',
-        ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
-    });
+    console.error('Error Global:', err);
+    res.status(500).json({ success: false, error: err.message });
 });
 
 export default app;

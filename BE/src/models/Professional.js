@@ -28,6 +28,7 @@ export class Professional {
         try {
             const pool = await getConnection();
             
+            // Obtener perfil base
             const profile = await pool.request()
                 .input('usuario_id', sql.Int, usuario_id)
                 .query(`
@@ -39,21 +40,14 @@ export class Professional {
 
             const perfil = profile.recordset[0];
 
-            const experiencias = await pool.request()
-                .input('profesional_id', sql.Int, perfil.perfil_id)
-                .query(`SELECT * FROM Experiencias WHERE profesional_id = @profesional_id ORDER BY id DESC`);
+            // Obtener datos relacionados
+            const request = pool.request();
+            request.input('profesional_id', sql.Int, perfil.perfil_id);
 
-            const habilidades = await pool.request()
-                .input('profesional_id', sql.Int, perfil.perfil_id)
-                .query(`SELECT * FROM Habilidades WHERE profesional_id = @profesional_id`);
-
-            const certificaciones = await pool.request()
-                .input('profesional_id', sql.Int, perfil.perfil_id)
-                .query(`SELECT * FROM Certificaciones WHERE profesional_id = @profesional_id`);
-
-            const proyectos = await pool.request()
-                .input('profesional_id', sql.Int, perfil.perfil_id)
-                .query(`SELECT * FROM Proyectos WHERE profesional_id = @profesional_id ORDER BY id DESC`);
+            const experiencias = await request.query(`SELECT * FROM Experiencias WHERE profesional_id = @profesional_id ORDER BY id DESC`);
+            const habilidades = await request.query(`SELECT * FROM Habilidades WHERE profesional_id = @profesional_id`);
+            const certificaciones = await request.query(`SELECT * FROM Certificaciones WHERE profesional_id = @profesional_id`);
+            const proyectos = await request.query(`SELECT * FROM Proyectos WHERE profesional_id = @profesional_id ORDER BY id DESC`);
 
             return {
                 ...perfil,
@@ -76,7 +70,6 @@ export class Professional {
             `;
             const request = pool.request();
 
-            // Filtro por búsqueda general
             if (filters.busqueda) {
                 query += ` AND (
                     nombre LIKE @busqueda OR 
@@ -87,7 +80,6 @@ export class Professional {
                 request.input('busqueda', sql.NVarChar, `%${filters.busqueda}%`);
             }
 
-            // Filtro por categoría
             if (filters.categoria_id) {
                 query += ` AND perfil_id IN (
                     SELECT DISTINCT profesional_id 
@@ -126,10 +118,17 @@ export class Professional {
         }
     }
 
+    // METODO ACTUALIZADO PARA GUARDAR TODO
     static async update(profesional_id, data) {
+        const pool = await getConnection();
+        const transaction = new sql.Transaction(pool);
+
         try {
-            const pool = await getConnection();
-            const result = await pool.request()
+            await transaction.begin();
+            const request = new sql.Request(transaction);
+
+            // 1. Actualizar datos principales del perfil
+            await request
                 .input('id', sql.Int, profesional_id)
                 .input('titulo', sql.NVarChar, data.titulo)
                 .input('descripcion', sql.NVarChar, data.descripcion)
@@ -145,9 +144,80 @@ export class Professional {
                     OUTPUT INSERTED.*
                     WHERE id = @id
                 `);
-            
-            return result.recordset[0];
+
+            // 2. Actualizar Experiencias (Borrar y Reinsertar)
+            if (data.experiencias) {
+                // Usamos un nuevo request para cada query dentro de la transacción
+                const reqDelExp = new sql.Request(transaction);
+                await reqDelExp.input('pid', sql.Int, profesional_id)
+                     .query('DELETE FROM Experiencias WHERE profesional_id = @pid');
+
+                for (const exp of data.experiencias) {
+                    const reqInsExp = new sql.Request(transaction);
+                    await reqInsExp
+                        .input('pid', sql.Int, profesional_id)
+                        .input('puesto', sql.NVarChar, exp.puesto)
+                        .input('periodo', sql.NVarChar, exp.periodo)
+                        .input('descripcion', sql.NVarChar, exp.descripcion)
+                        .query(`INSERT INTO Experiencias (profesional_id, puesto, periodo, descripcion) VALUES (@pid, @puesto, @periodo, @descripcion)`);
+                }
+            }
+
+            // 3. Actualizar Habilidades
+            if (data.habilidades) {
+                const reqDelHab = new sql.Request(transaction);
+                await reqDelHab.input('pid', sql.Int, profesional_id)
+                     .query('DELETE FROM Habilidades WHERE profesional_id = @pid');
+
+                for (const hab of data.habilidades) {
+                    const reqInsHab = new sql.Request(transaction);
+                    // Si viene como string simple o objeto
+                    const nombreHab = typeof hab === 'string' ? hab : hab.nombre;
+                    await reqInsHab
+                        .input('pid', sql.Int, profesional_id)
+                        .input('nombre', sql.NVarChar, nombreHab)
+                        .query(`INSERT INTO Habilidades (profesional_id, nombre) VALUES (@pid, @nombre)`);
+                }
+            }
+
+            // 4. Actualizar Certificaciones
+            if (data.certificaciones) {
+                const reqDelCert = new sql.Request(transaction);
+                await reqDelCert.input('pid', sql.Int, profesional_id)
+                     .query('DELETE FROM Certificaciones WHERE profesional_id = @pid');
+
+                for (const cert of data.certificaciones) {
+                    const reqInsCert = new sql.Request(transaction);
+                    const nombreCert = typeof cert === 'string' ? cert : cert.nombre;
+                    await reqInsCert
+                        .input('pid', sql.Int, profesional_id)
+                        .input('nombre', sql.NVarChar, nombreCert)
+                        .query(`INSERT INTO Certificaciones (profesional_id, nombre) VALUES (@pid, @nombre)`);
+                }
+            }
+
+            // 5. Actualizar Proyectos
+            if (data.proyectos) {
+                const reqDelProj = new sql.Request(transaction);
+                await reqDelProj.input('pid', sql.Int, profesional_id)
+                     .query('DELETE FROM Proyectos WHERE profesional_id = @pid');
+
+                for (const proj of data.proyectos) {
+                    const reqInsProj = new sql.Request(transaction);
+                    await reqInsProj
+                        .input('pid', sql.Int, profesional_id)
+                        .input('titulo', sql.NVarChar, proj.titulo)
+                        .input('fecha', sql.NVarChar, proj.fecha)
+                        .input('descripcion', sql.NVarChar, proj.descripcion)
+                        .query(`INSERT INTO Proyectos (profesional_id, titulo, fecha, descripcion) VALUES (@pid, @titulo, @fecha, @descripcion)`);
+                }
+            }
+
+            await transaction.commit();
+            return { success: true };
+
         } catch (error) {
+            await transaction.rollback();
             throw error;
         }
     }

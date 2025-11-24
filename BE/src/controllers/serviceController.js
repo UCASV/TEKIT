@@ -1,43 +1,29 @@
-// =============================================
-// BE/src/controllers/serviceController.js
-// =============================================
 import { Service } from '../models/Service.js';
-import { Professional } from '../models/Professional.js';
+import { Professional } from '../models/Professional.js'; 
 import { successResponse, errorResponse } from '../config/constants.js';
-import { MESSAGES } from '../config/constants.js';
 
 export const createService = async (req, res) => {
     try {
         const { categoria_id, titulo, descripcion, precio, tipo_precio } = req.body;
 
-        if (!categoria_id || !titulo || !tipo_precio) {
-            return errorResponse(res, MESSAGES.REQUIRED_FIELDS, 400);
-        }
-
-        // Obtener el perfil profesional del usuario autenticado
         const profile = await Professional.getFullProfile(req.user.id);
-
+        
         if (!profile) {
-            return errorResponse(res, 'Perfil profesional no encontrado', 404);
+            return errorResponse(res, 'Debes tener un perfil profesional para crear servicios', 403);
         }
 
         const serviceData = {
-            profesional_id: profile.perfil_id,
+            profesional_id: profile.perfil_id, 
             categoria_id,
             titulo,
             descripcion,
-            precio: precio || null,
+            precio,
             tipo_precio
         };
 
         const newService = await Service.create(serviceData);
 
-        return successResponse(
-            res,
-            newService,
-            'Servicio creado exitosamente',
-            201
-        );
+        return successResponse(res, newService, 'Servicio creado exitosamente', 201);
 
     } catch (error) {
         console.error('Error creando servicio:', error);
@@ -48,59 +34,16 @@ export const createService = async (req, res) => {
 export const getMyServices = async (req, res) => {
     try {
         const profile = await Professional.getFullProfile(req.user.id);
-
+        
         if (!profile) {
-            return errorResponse(res, 'Perfil profesional no encontrado', 404);
+            return successResponse(res, []); 
         }
 
-        const services = await Service.getByProfessional(profile.perfil_id);
-
+        const services = await Service.getByProfessionalId(profile.perfil_id);
         return successResponse(res, services);
 
     } catch (error) {
-        console.error('Error obteniendo servicios:', error);
-        return errorResponse(res, error.message, 500);
-    }
-};
-
-export const getServicesByCategory = async (req, res) => {
-    try {
-        const { id } = req.params;
-        const services = await Service.getByCategory(parseInt(id));
-
-        return successResponse(res, {
-            total: services.length,
-            services
-        });
-
-    } catch (error) {
-        console.error('Error obteniendo servicios por categoría:', error);
-        return errorResponse(res, error.message, 500);
-    }
-};
-
-export const updateService = async (req, res) => {
-    try {
-        const { id } = req.params;
-        const { titulo, descripcion, precio, tipo_precio } = req.body;
-
-        const service = await Service.getById(parseInt(id));
-
-        if (!service) {
-            return errorResponse(res, 'Servicio no encontrado', 404);
-        }
-
-        const updatedService = await Service.update(parseInt(id), {
-            titulo,
-            descripcion,
-            precio,
-            tipo_precio
-        });
-
-        return successResponse(res, updatedService, 'Servicio actualizado exitosamente');
-
-    } catch (error) {
-        console.error('Error actualizando servicio:', error);
+        console.error('Error obteniendo mis servicios:', error);
         return errorResponse(res, error.message, 500);
     }
 };
@@ -108,19 +51,52 @@ export const updateService = async (req, res) => {
 export const deleteService = async (req, res) => {
     try {
         const { id } = req.params;
+        const profile = await Professional.getFullProfile(req.user.id);
 
-        const service = await Service.getById(parseInt(id));
-
-        if (!service) {
-            return errorResponse(res, 'Servicio no encontrado', 404);
+        if (!profile) {
+            return errorResponse(res, 'No autorizado', 403);
         }
 
-        await Service.delete(parseInt(id));
+        const deleted = await Service.delete(id, profile.perfil_id);
 
-        return successResponse(res, null, 'Servicio eliminado exitosamente');
+        if (!deleted) {
+            return errorResponse(res, 'Servicio no encontrado o no te pertenece', 404);
+        }
+
+        return successResponse(res, null, 'Servicio eliminado correctamente');
 
     } catch (error) {
         console.error('Error eliminando servicio:', error);
         return errorResponse(res, error.message, 500);
     }
+};
+
+// --- ESTA ES LA FUNCIÓN CRÍTICA QUE SUELE FALTAR ---
+export const getServicesByProfessional = async (req, res) => {
+    try {
+        const { id } = req.params; // ID del Usuario
+
+        // 1. Obtener perfil profesional
+        const profile = await Professional.getFullProfile(parseInt(id));
+        
+        if (!profile) {
+            return successResponse(res, []); 
+        }
+
+        // 2. Obtener servicios
+        const services = await Service.getByProfessionalId(profile.perfil_id);
+        
+        // Solo activos
+        const activeServices = services.filter(s => s.activo);
+
+        return successResponse(res, activeServices);
+
+    } catch (error) {
+        console.error('Error obteniendo servicios públicos:', error);
+        return errorResponse(res, error.message, 500);
+    }
+};
+
+export const getServicesByCategory = async (req, res) => {
+    return successResponse(res, []);
 };

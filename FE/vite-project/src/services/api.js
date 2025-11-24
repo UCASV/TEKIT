@@ -31,7 +31,10 @@ api.interceptors.response.use(
         if (error.response?.status === 401) {
             localStorage.removeItem('token');
             localStorage.removeItem('user');
-            window.location.href = '/login';
+            // Evitar bucle infinito de redirección
+            if (!window.location.pathname.includes('/login')) {
+                window.location.href = '/login';
+            }
         }
         return Promise.reject(error.response?.data || error.message);
     }
@@ -70,13 +73,28 @@ export const contactAPI = {
     getStats: () => api.get('/contacts/stats')
 };
 
-// Services (NUEVO - REQUERIDO POR ServiceForm.jsx)
+// Services (ESTA ES LA QUE FALTABA)
 export const serviceAPI = {
     create: (data) => api.post('/services', data),
     getMyServices: () => api.get('/services/my-services'),
     update: (id, data) => api.put(`/services/${id}`, data),
     delete: (id) => api.delete(`/services/${id}`),
-    getByCategory: (id) => api.get(`/services/category/${id}`)
+    getByCategory: (id) => api.get(`/services/category/${id}`),
+    // Función crítica para el perfil público:
+    getByProfessional: (userId) => api.get(`/services/professional/${userId}`)
+};
+
+// Locations (Ubicaciones)
+export const locationAPI = {
+    getAll: () => api.get('/locations')
+};
+
+// Bookings (Historial de Cliente)
+export const bookingAPI = {
+    getMyBookings: () => api.get('/bookings/my-bookings'),
+    create: (data) => api.post('/bookings', data),
+    getProfessionalRequests: () => api.get('/bookings/professional-requests'),
+    updateStatus: (id, estado) => api.put(`/bookings/${id}/status`, { estado })
 };
 
 export default api;

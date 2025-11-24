@@ -5,15 +5,13 @@ import { MESSAGES } from '../config/constants.js';
 export const searchProfessionals = async (req, res) => {
     try {
         const filters = {
-            categoria_id: req.query.category,
-            ubicacion: req.query.location,
-            tarifa_min: req.query.priceMin,
-            tarifa_max: req.query.priceMax,
-            calificacion_min: req.query.rating,
-            busqueda: req.query.q
+            categoria_id: req.query.categoria_id,
+            ubicacion: req.query.ubicacion,
+            tarifa_min: req.query.tarifa_min,
+            tarifa_max: req.query.tarifa_max,
+            calificacion_min: req.query.calificacion_min,
+            busqueda: req.query.busqueda
         };
-
-        console.log('Búsqueda con filtros:', filters);
 
         const professionals = await Professional.search(filters);
 
@@ -31,7 +29,6 @@ export const searchProfessionals = async (req, res) => {
 export const getProfessionalProfile = async (req, res) => {
     try {
         const { id } = req.params;
-
         const profile = await Professional.getFullProfile(parseInt(id));
 
         if (!profile) {
@@ -53,11 +50,16 @@ export const updateProfessionalProfile = async (req, res) => {
             descripcion,
             ubicacion,
             tarifa_por_hora,
-            años_experiencia
+            años_experiencia,
+            // Extraer arrays importantes para la actualización completa
+            experiencias,
+            habilidades,
+            certificaciones,
+            proyectos
         } = req.body;
 
-        // Obtener el perfil profesional del usuario autenticado
-        const profile = await Professional.getFullProfile(req.user.userId);
+        // Usamos req.user.id porque viene del token (ID de Usuario)
+        const profile = await Professional.getFullProfile(req.user.id); 
 
         if (!profile) {
             return errorResponse(res, 'Perfil profesional no encontrado', 404);
@@ -68,7 +70,11 @@ export const updateProfessionalProfile = async (req, res) => {
             descripcion,
             ubicacion,
             tarifa_por_hora,
-            años_experiencia
+            años_experiencia,
+            experiencias,
+            habilidades,
+            certificaciones,
+            proyectos
         });
 
         return successResponse(res, updatedProfile, MESSAGES.PROFILE_UPDATED);

@@ -1,49 +1,16 @@
-// =============================================
-// BE/src/routes/serviceRoutes.js
-// =============================================
 import express from 'express';
-import {
-    createService,
-    getMyServices,
-    getServicesByCategory,
-    updateService,
-    deleteService
-} from '../controllers/serviceController.js';
-import { authenticate, authorize } from '../middlewares/auth.js';
-import { ROLES } from '../config/constants.js';
+import { createService, getMyServices, deleteService, getServicesByProfessional } from '../controllers/serviceController.js';
+import { authenticate } from '../middlewares/auth.js';
 
 const router = express.Router();
 
-// Rutas protegidas para profesionales
-router.post(
-    '/',
-    authenticate,
-    authorize(ROLES.PROFESIONAL),
-    createService
-);
-
-router.get(
-    '/my-services',
-    authenticate,
-    authorize(ROLES.PROFESIONAL),
-    getMyServices
-);
-
-router.put(
-    '/:id',
-    authenticate,
-    authorize(ROLES.PROFESIONAL),
-    updateService
-);
-
-router.delete(
-    '/:id',
-    authenticate,
-    authorize(ROLES.PROFESIONAL),
-    deleteService
-);
+// Rutas protegidas
+router.post('/', authenticate, createService);
+router.get('/my-services', authenticate, getMyServices);
+router.delete('/:id', authenticate, deleteService);
 
 // Rutas públicas
-router.get('/category/:id', getServicesByCategory);
+// router.get('/category/:id', getServicesByCategory); // (Opcional, si la usas)
+router.get('/professional/:id', getServicesByProfessional); // <--- NUEVA RUTA
 
 export default router;

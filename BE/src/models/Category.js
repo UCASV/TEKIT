@@ -1,5 +1,5 @@
 // =============================================
-// BE/src/models/Category.js - CORREGIDO
+// BE/src/models/Category.js
 // =============================================
 import { getConnection, sql } from '../config/database.js';
 
@@ -10,7 +10,11 @@ export class Category {
             const pool = await getConnection();
             const result = await pool.request()
                 .query(`
-                    SELECT c.*,
+                    SELECT 
+                        c.id,
+                        c.nombre,
+                        c.descripcion,
+                        c.icono,
                         (SELECT COUNT(*) FROM Servicios s WHERE s.categoria_id = c.id AND s.activo = 1) as total_servicios,
                         (SELECT COUNT(DISTINCT s.profesional_id) 
                          FROM Servicios s 
