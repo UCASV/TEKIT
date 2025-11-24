@@ -243,36 +243,31 @@ TEKIT/
 ├── BE/
 │   ├── src/
 │   │   ├── app.js
-│   │   ├── server.js
-│   │   ├── config/
-│   │   ├── controllers/
-│   │   ├── models/
-│   │   ├── routes/
-│   │   ├── middlewares/
-│   │   ├── utils/
-│   │   └── createAdmin.js
+│   │   └── server.js
+│   ├── config/
+│   ├── controllers/
+│   ├── models/
+│   ├── routes/
+│   ├── middlewares/
+│   ├── utils/
 │   ├── .env
-│   └── package.json
-│
-├── FE/
-│   ├── vite-project/
-│   │   ├── public/
-│   │   ├── src/
-│   │   │   ├── assets/
-│   │   │   ├── components/
-│   │   │   ├── screens/
-│   │   │   ├── context/
-│   │   │   ├── routes/
-│   │   │   ├── hooks/
-│   │   │   ├── utils/
-│   │   │   ├── App.jsx
-│   │   │   ├── main.jsx
-│   │   │   └── index.css
-│   │   ├── vite.config.js
-│   │   └── .env.local
-│   └── package.json
-│
-└── README.md
+│   └── createAdmin.js
+└── FE / vite-project/
+    ├── public/
+    ├── src/
+    │   ├── assets/
+    │   ├── components/
+    │   ├── screens/
+    │   ├── context/
+    │   ├── services/
+    │   ├── routes/
+    │   ├── hooks/
+    │   ├── utils/
+    │   ├── App.jsx
+    │   ├── main.jsx
+    │   └── index.css
+    ├── .env.local
+    └── vite.config.js
 
 
 ---
