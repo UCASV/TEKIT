@@ -24,7 +24,7 @@ function ServiceForm() {
   });
 
   useEffect(() => {
-    // Si el usuario no es profesional (rol_id = 2), redirigir
+    //Si el usuario no es profesional (rol_id = 2), redirigir
     if (!user || user?.rol_id !== 2) { 
         setLoading(false);
         setError('Acceso denegado. Esta sección es solo para profesionales.');

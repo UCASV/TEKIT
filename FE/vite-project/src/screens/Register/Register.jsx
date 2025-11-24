@@ -1,18 +1,17 @@
 import { Container, Row, Col, Card, Form, Button, Alert, Spinner } from 'react-bootstrap'
 import { Link, useNavigate } from 'react-router-dom'
 import { useState, useEffect } from 'react'
-import { useAuth } from '../../context/AuthContext' // Importamos el contexto de autenticación
-import { categoryAPI, locationAPI } from '../../services/api' // Importamos las APIs para listas dinámicas
+import { useAuth } from '../../context/AuthContext'
+import { categoryAPI, locationAPI } from '../../services/api' //APIs para listas dinámicas
 import './Register.css'
 
 function Register() {
   const navigate = useNavigate()
-  const { register } = useAuth() // Usamos la función real de registro
+  const { register } = useAuth()
   const [step, setStep] = useState(1)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
-  
-  // Estados para listas dinámicas (Categorías y Ubicaciones reales de la BD)
+
   const [categories, setCategories] = useState([])
   const [locations, setLocations] = useState([])
 
@@ -24,28 +23,28 @@ function Register() {
     password: '',
     confirmPassword: '',
     accountType: 'client',
-    profession: '', 
-    categoryId: '', // ID de la categoría para la BD
-    location: '',   
+    profession: '',
+    categoryId: '',
+    location: '',
     experience: '',
     description: '',
     hourlyRate: '',
     acceptTerms: false
   })
 
-  // Cargar listas desde la BD al iniciar
+  //Cargar listas desde la BD al iniciar
   useEffect(() => {
     const fetchData = async () => {
-        try {
-            const [catRes, locRes] = await Promise.all([
-                categoryAPI.getAll(),
-                locationAPI.getAll()
-            ]);
-            setCategories(catRes.data || []);
-            setLocations(locRes.data || []);
-        } catch (err) {
-            console.error("Error cargando listas:", err);
-        }
+      try {
+        const [catRes, locRes] = await Promise.all([
+          categoryAPI.getAll(),
+          locationAPI.getAll()
+        ]);
+        setCategories(catRes.data || []);
+        setLocations(locRes.data || []);
+      } catch (err) {
+        console.error("Error cargando listas:", err);
+      }
     };
     fetchData();
   }, []);
@@ -53,24 +52,24 @@ function Register() {
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target
 
-    // VALIDACIÓN DE TELÉFONO: Solo números y máximo 8 dígitos
+    //Telefono: Solo números y máximo 8 dígitos
     if (name === 'phone') {
       const numericValue = value.replace(/\D/g, '').slice(0, 8);
       setFormData({ ...formData, [name]: numericValue });
-    } 
-    // Lógica para el select de profesión (guardar ID y Nombre)
+    }
+
     else if (name === 'professionSelect') {
-        const selectedCat = categories.find(c => c.id === parseInt(value));
-        setFormData({
-            ...formData,
-            categoryId: value,
-            profession: selectedCat ? selectedCat.nombre : ''
-        });
+      const selectedCat = categories.find(c => c.id === parseInt(value));
+      setFormData({
+        ...formData,
+        categoryId: value,
+        profession: selectedCat ? selectedCat.nombre : ''
+      });
     } else {
-        setFormData({
-            ...formData,
-            [name]: type === 'checkbox' ? checked : value
-        });
+      setFormData({
+        ...formData,
+        [name]: type === 'checkbox' ? checked : value
+      });
     }
     setError('')
   }
@@ -78,10 +77,10 @@ function Register() {
   const validateStep1 = () => {
     if (!formData.firstName || !formData.lastName) { setError('Por favor completa tu nombre'); return false; }
     if (!formData.email || !/\S+@\S+\.\S+/.test(formData.email)) { setError('Por favor ingresa un email válido'); return false; }
-    
-    // Validación estricta de teléfono
+
+
     if (!formData.phone || formData.phone.length !== 8) { setError('El teléfono debe tener exactamente 8 dígitos numéricos'); return false; }
-    
+
     if (!formData.password || formData.password.length < 6) { setError('La contraseña debe tener al menos 6 caracteres'); return false; }
     if (formData.password !== formData.confirmPassword) { setError('Las contraseñas no coinciden'); return false; }
     return true;
@@ -119,23 +118,23 @@ function Register() {
     setError('')
 
     try {
-      // LLAMADA REAL A LA BASE DE DATOS
+
       await register({
-        firstName: formData.firstName, 
-        lastName: formData.lastName, 
-        email: formData.email, 
-        phone: formData.phone, 
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        email: formData.email,
+        phone: formData.phone,
         password: formData.password,
         accountType: formData.accountType,
-        // Datos Profesionales
-        profession: formData.profession, 
-        categoryId: formData.categoryId, 
+
+        profession: formData.profession,
+        categoryId: formData.categoryId,
         location: formData.location,
         experience: formData.experience,
         description: formData.description,
         hourlyRate: parseFloat(formData.hourlyRate) || 0
       })
-      
+
       navigate('/login', { state: { message: '¡Registro exitoso! Por favor inicia sesión.' } })
     } catch (err) {
       const errorMessage = err.message || err.data?.message || 'Error al registrar. Intenta nuevamente.'
@@ -186,17 +185,17 @@ function Register() {
                         <Form.Label>Email *</Form.Label>
                         <Form.Control type="email" name="email" placeholder="tu@email.com" value={formData.email} onChange={handleChange} required />
                       </Form.Group>
-                      
+
                       <Form.Group className="mb-3">
                         <Form.Label>Teléfono *</Form.Label>
-                        <Form.Control 
-                            type="tel" 
-                            name="phone" 
-                            placeholder="12345678" 
-                            value={formData.phone} 
-                            onChange={handleChange} 
-                            maxLength={8}
-                            required 
+                        <Form.Control
+                          type="tel"
+                          name="phone"
+                          placeholder="12345678"
+                          value={formData.phone}
+                          onChange={handleChange}
+                          maxLength={8}
+                          required
                         />
                         <Form.Text className="text-muted">
                           Sin guiones ni espacios, máximo 8 números.
@@ -220,14 +219,14 @@ function Register() {
                       <Form.Group className="mb-4">
                         <Form.Label className="fw-semibold">Tipo de Cuenta *</Form.Label>
                         <div className="d-flex gap-3">
-                          <Card className={`flex-fill account-type-card ${formData.accountType === 'client' ? 'selected' : ''}`} onClick={() => handleChange({ target: { name: 'accountType', value: 'client' }})} style={{ cursor: 'pointer' }}>
+                          <Card className={`flex-fill account-type-card ${formData.accountType === 'client' ? 'selected' : ''}`} onClick={() => handleChange({ target: { name: 'accountType', value: 'client' } })} style={{ cursor: 'pointer' }}>
                             <Card.Body className="text-center py-4">
                               <div className="fs-2 mb-2">👤</div>
                               <div className="fw-semibold">Cliente</div>
                               <small className="text-muted">Busco contratar servicios</small>
                             </Card.Body>
                           </Card>
-                          <Card className={`flex-fill account-type-card ${formData.accountType === 'professional' ? 'selected' : ''}`} onClick={() => handleChange({ target: { name: 'accountType', value: 'professional' }})} style={{ cursor: 'pointer' }}>
+                          <Card className={`flex-fill account-type-card ${formData.accountType === 'professional' ? 'selected' : ''}`} onClick={() => handleChange({ target: { name: 'accountType', value: 'professional' } })} style={{ cursor: 'pointer' }}>
                             <Card.Body className="text-center py-4">
                               <div className="fs-2 mb-2">💼</div>
                               <div className="fw-semibold">Profesional</div>

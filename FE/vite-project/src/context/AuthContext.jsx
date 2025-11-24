@@ -15,17 +15,17 @@ export const useAuth = () => {
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
-    const [initializationError, setInitializationError] = useState(null); // Nuevo estado para errores
+    const [initializationError, setInitializationError] = useState(null);
 
     useEffect(() => {
         try {
-            // Verificar si hay un usuario almacenado
+            //Verificar si hay un usuario almacenado
             const currentUser = authService.getCurrentUser();
             if (currentUser) {
                 setUser(currentUser);
             }
         } catch (e) {
-            // Capturar cualquier error inesperado durante la inicialización (Ej: Corrupción en otra clave de LocalStorage)
+            //Capturar cualquier error inesperado durante la inicialización
             console.error('Error fatal durante la inicialización de AuthProvider:', e);
             setInitializationError('Error crítico de inicialización. Por favor, limpia el almacenamiento local (localStorage) y recarga la página.');
         } finally {
@@ -62,7 +62,7 @@ export const AuthProvider = ({ children }) => {
         try {
             // Llamar a la API de actualización
             await authService.updateProfile(data); 
-            // Re-obtener el usuario actualizado del localStorage (maneja la propagación de cambios)
+
             const currentUser = authService.getCurrentUser();
             setUser(currentUser);
             return currentUser;
@@ -82,7 +82,7 @@ export const AuthProvider = ({ children }) => {
         hasRole: (roleId) => user && user.rol_id === roleId
     };
 
-    // 1. Mostrar Error Crítico de Inicialización
+    //Muestra error Crítico de inicialización
     if (initializationError) {
         return (
             <div className="min-vh-100 d-flex align-items-center justify-content-center bg-light">
@@ -98,7 +98,6 @@ export const AuthProvider = ({ children }) => {
         );
     }
     
-    // 2. Mostrar Spinner de Carga
     if (loading) {
         return (
             <div className="min-vh-100 d-flex align-items-center justify-content-center">
@@ -109,7 +108,6 @@ export const AuthProvider = ({ children }) => {
         );
     }
 
-    // 3. Renderizar la aplicación
     return (
         <AuthContext.Provider value={value}>
             {children}

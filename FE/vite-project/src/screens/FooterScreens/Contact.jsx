@@ -24,14 +24,13 @@ function Contact() {
     setError(null);
     setSuccess(null);
 
-    // Validación básica
     if (!formData.name || !formData.email || !formData.subject || !formData.message) {
       setError("Por favor, completa todos los campos.");
       setSubmitting(false);
       return;
     }
 
-    // Simulación de envío de formulario de contacto general (el endpoint /contacts es solo para contactos de profesional)
+    //Simulación de envío de formulario de contacto general
     setTimeout(() => {
         if (Math.random() > 0.1) {
             setSuccess("¡Mensaje enviado con éxito! Te responderemos pronto.");

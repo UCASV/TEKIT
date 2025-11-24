@@ -17,7 +17,7 @@ function Home() {
         const catResponse = await categoryAPI.getAll()
         setCategories(catResponse.data || [])
 
-        // Obtener los 3 mejores profesionales por calificación
+        //Obtener los 3 mejores profesionales por calificación
         const profResponse = await professionalAPI.search({})
         setProfessionals((profResponse.data.professionals || []).slice(0, 3))
       } catch (e) {
@@ -28,14 +28,14 @@ function Home() {
     }
     fetchData()
   }, [])
-  
-  // Lógica para renderizar estrellas (extraída de PerfilContratante.jsx)
+
+  //Lógica para estrellas (extraída de PerfilContratante.jsx)
   const renderStars = (rating) => {
     const roundedRating = Math.round(rating || 0)
     return '★'.repeat(roundedRating) + '☆'.repeat(5 - roundedRating)
   }
 
-  // Hardcoded steps (part of the static UI guide)
+
   const steps = [
     {
       icon: '🔍',
@@ -69,7 +69,7 @@ function Home() {
     navigate(`/profesional/${professionalId}`)
   }
 
-  // Random gradient for avatar placeholder (FE only visual utility)
+
   const getRandomGradient = () => {
     const gradients = ['bg-gradient-purple', 'bg-gradient-blue', 'bg-gradient-green'];
     return gradients[Math.floor(Math.random() * gradients.length)];

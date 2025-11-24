@@ -1,32 +1,30 @@
 import { useState, useEffect } from 'react'
 import { Container, Row, Col, Form, Button, Card, Badge, Spinner, Alert } from 'react-bootstrap'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { professionalAPI, categoryAPI, locationAPI } from '../../services/api' // Importamos locationAPI
+import { professionalAPI, categoryAPI, locationAPI } from '../../services/api'
 import './Search.css'
 
 function Search() {
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
-  
-  // --- ESTADOS DE DATOS MAESTROS (Combos y Listas) ---
+
   const [categoriesList, setCategoriesList] = useState([]);
   const [locationsList, setLocationsList] = useState([]);
   const [professionals, setProfessionals] = useState([]);
-  
-  // --- ESTADOS DE CARGA Y ERROR ---
-  const [loadingData, setLoadingData] = useState(true); // Para cargar categorías/ubicaciones
-  const [loadingSearch, setLoadingSearch] = useState(false); // Para buscar profesionales
+
+  //Estados de carga y error
+  const [loadingData, setLoadingData] = useState(true); //Para cargar categorías/ubicaciones
+  const [loadingSearch, setLoadingSearch] = useState(false); //Para buscar profesionales
   const [error, setError] = useState(null);
 
-  // --- VALORES INICIALES DE URL ---
   const initialCategory = searchParams.get('category') ? parseInt(searchParams.get('category')) : null;
   const initialQ = searchParams.get('q') || '';
   const initialPriceMin = parseInt(searchParams.get('priceMin')) || 0;
   const initialPriceMax = parseInt(searchParams.get('priceMax')) || 1000;
-  const initialRating = parseFloat(searchParams.get('rating')) || 0; // 0 para mostrar todos por defecto
+  const initialRating = parseFloat(searchParams.get('rating')) || 0;
   const initialLocation = searchParams.get('location') || '';
 
-  // --- ESTADOS DE FILTROS ---
+  //Estados de filtros y búsqueda
   const [searchTerm, setSearchTerm] = useState(initialQ);
   const [filters, setFilters] = useState({
     categoryId: initialCategory,
@@ -36,90 +34,81 @@ function Search() {
     location: initialLocation
   });
 
-  // Estados locales para evitar parpadeo en inputs de precio
+
   const [localPriceMin, setLocalPriceMin] = useState(initialPriceMin.toString());
   const [localPriceMax, setLocalPriceMax] = useState(initialPriceMax.toString());
   const [sortBy, setSortBy] = useState('relevant');
 
-  // ----------------------------------------------------------------
-  // 1. EFECTO DE INICIALIZACIÓN (Carga Categorías y Ubicaciones)
-  // ----------------------------------------------------------------
+
   useEffect(() => {
     const fetchMasterData = async () => {
-        try {
-            const [catRes, locRes] = await Promise.all([
-                categoryAPI.getAll(),
-                locationAPI.getAll()
-            ]);
-            setCategoriesList(catRes.data || []);
-            setLocationsList(locRes.data || []);
-        } catch (e) {
-            console.error("Error cargando datos maestros:", e);
-            setError("Error al cargar filtros. Verifica tu conexión.");
-        } finally {
-            setLoadingData(false);
-        }
+      try {
+        const [catRes, locRes] = await Promise.all([
+          categoryAPI.getAll(),
+          locationAPI.getAll()
+        ]);
+        setCategoriesList(catRes.data || []);
+        setLocationsList(locRes.data || []);
+      } catch (e) {
+        console.error("Error cargando datos maestros:", e);
+        setError("Error al cargar filtros. Verifica tu conexión.");
+      } finally {
+        setLoadingData(false);
+      }
     };
     fetchMasterData();
   }, []);
 
-  // ----------------------------------------------------------------
-  // 2. EFECTO DE BÚSQUEDA (Se ejecuta cuando cambian los filtros)
-  // ----------------------------------------------------------------
+
   useEffect(() => {
     const searchPros = async () => {
-        setLoadingSearch(true);
-        setError(null);
-        
-        try {
-            // Construir objeto de filtros para el BE
-            const apiFilters = {
-                busqueda: searchTerm || undefined,
-                categoria_id: filters.categoryId || undefined,
-                tarifa_min: filters.priceMin > 0 ? filters.priceMin : undefined,
-                tarifa_max: filters.priceMax < 1000 ? filters.priceMax : undefined,
-                calificacion_min: filters.rating > 0 ? filters.rating : undefined,
-                ubicacion: filters.location && filters.location !== 'Toda El Salvador' ? filters.location : undefined
-            };
+      setLoadingSearch(true);
+      setError(null);
 
-            const response = await professionalAPI.search(apiFilters);
-            setProfessionals(response.data.professionals || []);
+      try {
 
-        } catch (e) {
-            console.error("Error buscando profesionales:", e);
-            setError("Error al realizar la búsqueda.");
-            setProfessionals([]);
-        } finally {
-            setLoadingSearch(false);
-        }
+        const apiFilters = {
+          busqueda: searchTerm || undefined,
+          categoria_id: filters.categoryId || undefined,
+          tarifa_min: filters.priceMin > 0 ? filters.priceMin : undefined,
+          tarifa_max: filters.priceMax < 1000 ? filters.priceMax : undefined,
+          calificacion_min: filters.rating > 0 ? filters.rating : undefined,
+          ubicacion: filters.location && filters.location !== 'Toda El Salvador' ? filters.location : undefined
+        };
+
+        const response = await professionalAPI.search(apiFilters);
+        setProfessionals(response.data.professionals || []);
+
+      } catch (e) {
+        console.error("Error buscando profesionales:", e);
+        setError("Error al realizar la búsqueda.");
+        setProfessionals([]);
+      } finally {
+        setLoadingSearch(false);
+      }
     };
 
-    // Debounce pequeño opcional o llamada directa
+
     const timer = setTimeout(() => {
-        searchPros();
+      searchPros();
     }, 300);
 
     return () => clearTimeout(timer);
 
-  }, [searchTerm, filters]); // Se dispara al cambiar texto o filtros
+  }, [searchTerm, filters]);
 
-  // ----------------------------------------------------------------
-  // HANDLERS
-  // ----------------------------------------------------------------
 
-  // Manejo del formulario de búsqueda principal
   const handleSearchSubmit = (e) => {
     e.preventDefault();
-    // Actualizar URL para reflejar la búsqueda
+    //Actualizar URL para reflejar la búsqueda
     setSearchParams({ q: searchTerm });
-    // El useEffect detectará el cambio en searchTerm y ejecutará la búsqueda
   };
 
-  // Manejo de Categorías (Checkbox tipo Radio: solo una activa)
+  // Manejo de Categorías 
   const handleCategoryChange = (catId) => {
     setFilters(prev => ({
-        ...prev,
-        categoryId: prev.categoryId === catId ? null : catId // Toggle: si ya está, lo quita
+      ...prev,
+      categoryId: prev.categoryId === catId ? null : catId
     }));
   };
 
@@ -128,21 +117,21 @@ function Search() {
     const min = parseInt(localPriceMin) || 0;
     const max = parseInt(localPriceMax) || 1000;
     if (min !== filters.priceMin || max !== filters.priceMax) {
-        setFilters(prev => ({ ...prev, priceMin: min, priceMax: max }));
+      setFilters(prev => ({ ...prev, priceMin: min, priceMax: max }));
     }
   };
 
-  // Manejo de Ubicación
+
   const handleLocationChange = (e) => {
     setFilters(prev => ({ ...prev, location: e.target.value }));
   };
 
-  // Manejo de Calificación
+
   const handleRatingChange = (rating) => {
-    setFilters(prev => ({ ...prev, rating: prev.rating === rating ? 0 : rating })); // Toggle
+    setFilters(prev => ({ ...prev, rating: prev.rating === rating ? 0 : rating }));
   };
 
-  // Limpiar filtros
+
   const clearFilters = () => {
     setFilters({
       categoryId: null,
@@ -157,7 +146,7 @@ function Search() {
     setSearchParams({});
   };
 
-  // Ordenamiento local
+
   const getSortedProfessionals = () => {
     const list = [...professionals];
     switch (sortBy) {
@@ -170,7 +159,6 @@ function Search() {
 
   const sortedProfessionals = getSortedProfessionals();
 
-  // Helpers visuales
   const renderStars = (rating) => {
     const rounded = Math.round(rating || 0);
     return '★'.repeat(rounded) + '☆'.repeat(5 - rounded);
@@ -183,10 +171,10 @@ function Search() {
 
   if (loadingData) {
     return (
-        <Container className="my-5 text-center">
-            <Spinner animation="border" variant="primary" />
-            <p className="mt-2">Cargando filtros...</p>
-        </Container>
+      <Container className="my-5 text-center">
+        <Spinner animation="border" variant="primary" />
+        <p className="mt-2">Cargando filtros...</p>
+      </Container>
     );
   }
 
@@ -235,9 +223,9 @@ function Search() {
                       id={`cat-${cat.id}`}
                       label={
                         <div className="d-flex justify-content-between w-100">
-                            <span>{cat.nombre}</span>
-                            {/* Muestra 0 si es null/undefined */}
-                            <Badge bg="light" text="dark">{cat.total_profesionales || 0}</Badge>
+                          <span>{cat.nombre}</span>
+                          {/* Muestra 0 si es null/undefined */}
+                          <Badge bg="light" text="dark">{cat.total_profesionales || 0}</Badge>
                         </div>
                       }
                       checked={filters.categoryId === cat.id}
@@ -315,7 +303,7 @@ function Search() {
                 <Row className="align-items-center">
                   <Col>
                     <p className="mb-0 text-muted">
-                      {loadingSearch ? 'Buscando...' : 
+                      {loadingSearch ? 'Buscando...' :
                         <>Encontrados <strong>{sortedProfessionals.length}</strong> profesionales</>
                       }
                     </p>
@@ -335,42 +323,42 @@ function Search() {
             {error && <Alert variant="danger">{error}</Alert>}
 
             {loadingSearch ? (
-                <div className="text-center py-5"><Spinner animation="border" variant="primary" /></div>
+              <div className="text-center py-5"><Spinner animation="border" variant="primary" /></div>
             ) : (
-                <Row className="g-3">
+              <Row className="g-3">
                 {sortedProfessionals.map(prof => (
-                    <Col key={prof.usuario_id} md={6} lg={4}>
+                  <Col key={prof.usuario_id} md={6} lg={4}>
                     <Card className="professional-card h-100">
-                        <Card.Body>
+                      <Card.Body>
                         <div className="d-flex align-items-center mb-3">
-                            <div className={`avatar ${getAvatarClass(prof.usuario_id)} rounded-circle d-flex align-items-center justify-content-center text-white fw-bold me-3`}>
+                          <div className={`avatar ${getAvatarClass(prof.usuario_id)} rounded-circle d-flex align-items-center justify-content-center text-white fw-bold me-3`}>
                             {prof.nombre?.charAt(0)}{prof.apellido?.charAt(0)}
-                            </div>
-                            <div className="flex-grow-1">
+                          </div>
+                          <div className="flex-grow-1">
                             <h5 className="mb-1 fs-6 text-truncate">{prof.nombre} {prof.apellido}</h5>
                             <p className="text-muted mb-1 small text-truncate">{prof.titulo}</p>
                             <div className="rating small">
-                                <span className="text-warning">{renderStars(prof.calificacion_promedio)}</span>
-                                <span className="text-muted ms-1">({prof.total_resenas})</span>
+                              <span className="text-warning">{renderStars(prof.calificacion_promedio)}</span>
+                              <span className="text-muted ms-1">({prof.total_resenas})</span>
                             </div>
-                            </div>
+                          </div>
                         </div>
                         <Card.Text className="text-muted small mb-3 text-truncate-3">
-                            {prof.descripcion || "Sin descripción disponible."}
+                          {prof.descripcion || "Sin descripción disponible."}
                         </Card.Text>
                         <div className="d-flex justify-content-between align-items-center mt-auto">
-                            <span className="text-primary fw-bold">
-                                {prof.tarifa_por_hora ? `$${prof.tarifa_por_hora}/h` : 'A convenir'}
-                            </span>
-                            <Button variant="primary" size="sm" onClick={() => navigate(`/profesional/${prof.usuario_id}`)}>
-                                Ver Perfil
-                            </Button>
+                          <span className="text-primary fw-bold">
+                            {prof.tarifa_por_hora ? `$${prof.tarifa_por_hora}/h` : 'A convenir'}
+                          </span>
+                          <Button variant="primary" size="sm" onClick={() => navigate(`/profesional/${prof.usuario_id}`)}>
+                            Ver Perfil
+                          </Button>
                         </div>
-                        </Card.Body>
+                      </Card.Body>
                     </Card>
-                    </Col>
+                  </Col>
                 ))}
-                </Row>
+              </Row>
             )}
 
             {!loadingSearch && sortedProfessionals.length === 0 && !error && (
