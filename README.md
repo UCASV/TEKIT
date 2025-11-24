@@ -239,8 +239,6 @@ SQL Server (Database)
 
 ---
 
-# Estructura del Proyecto
-
 TEKIT/
 ├── BE/
 │   ├── src/
@@ -251,28 +249,30 @@ TEKIT/
 │   │   ├── models/
 │   │   ├── routes/
 │   │   ├── middlewares/
-│   │   └── utils/
+│   │   ├── utils/
+│   │   └── createAdmin.js
 │   ├── .env
-│   └── createAdmin.js
+│   └── package.json
 │
-└── FE/
-    └── vite-project/
-        ├── public/
-        ├── src/
-        │   ├── assets/
-        │   ├── components/
-        │   ├── screens/
-        │   ├── context/
-        │   ├── services/
-        │   ├── routes/
-        │   ├── hooks/
-        │   ├── utils/
-        │   ├── App.jsx
-        │   ├── main.jsx
-        │   └── index.css
-        ├── .env.local
-        └── vite.config.js
-
+├── FE/
+│   ├── vite-project/
+│   │   ├── public/
+│   │   ├── src/
+│   │   │   ├── assets/
+│   │   │   ├── components/
+│   │   │   ├── screens/
+│   │   │   ├── context/
+│   │   │   ├── routes/
+│   │   │   ├── hooks/
+│   │   │   ├── utils/
+│   │   │   ├── App.jsx
+│   │   │   ├── main.jsx
+│   │   │   └── index.css
+│   │   ├── vite.config.js
+│   │   └── .env.local
+│   └── package.json
+│
+└── README.md
 
 
 ---
